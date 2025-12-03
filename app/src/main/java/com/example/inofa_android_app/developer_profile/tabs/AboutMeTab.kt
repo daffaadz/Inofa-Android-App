@@ -25,13 +25,13 @@ fun AboutMeTab(developer: Developer) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             AboutSection(
                 title = "Tentang Saya",
-                content = developer.aboutMe
+                content = developer.bio ?: "Tidak ada informasi bio."
             )
         }
         item {
@@ -54,7 +54,7 @@ fun AboutSection(title: String, content: String) {
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -73,7 +73,7 @@ fun AboutSection(title: String, content: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SkillsSection(title: String, skills: List<Skill>) {
+fun SkillsSection(title: String, skills: List<String>) {
     Column {
         Text(
             text = title,
@@ -87,14 +87,14 @@ fun SkillsSection(title: String, skills: List<Skill>) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             skills.forEach { skill ->
-                SkillChip(skill = skill)
+                SkillChip(skillName = skill)
             }
         }
     }
 }
 
 @Composable
-fun SkillChip(skill: Skill) {
+fun SkillChip(skillName: String) {
     Box(
         modifier = Modifier
             .background(
@@ -104,7 +104,7 @@ fun SkillChip(skill: Skill) {
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(
-            text = skill.name,
+            text = skillName,
             style = MaterialTheme.typography.bodySmall,
             color = Color(0xFF388E3C) // PrimaryGreen
         )

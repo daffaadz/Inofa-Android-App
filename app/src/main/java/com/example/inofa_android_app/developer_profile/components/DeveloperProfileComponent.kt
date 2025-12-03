@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.example.inofa_android_app.data.Developer
 import com.example.inofa_android_app.data.mockDeveloper
 import com.example.inofa_android_app.ui.theme.InofaAndroidAppTheme
+import com.example.inofa_android_app.ui.theme.Primary
+import com.example.inofa_android_app.ui.theme.White
 
 // Assuming the primary color is the green used for the button and text
 val PrimaryGreen = Color(0xFF388E3C) // A darker green for better contrast
@@ -43,7 +45,8 @@ fun DeveloperProfileTopBar(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = Color.Black
                 )
             }
         },
@@ -51,13 +54,14 @@ fun DeveloperProfileTopBar(
             IconButton(onClick = onActionClick) {
                 Icon(
                     imageVector = Icons.Default.Share, // Using Share icon as a placeholder for the design's share/message icon
-                    contentDescription = "Share"
+                    contentDescription = "Share",
+                    tint = Color.Black
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            titleContentColor = Color.Black
         )
     )
 }
@@ -95,10 +99,11 @@ fun DeveloperProfileHeader(
         Text(
             text = developer.name,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
         )
         Text(
-            text = developer.title,
+            text = if (developer.skills.isNotEmpty()) developer.skills.first() else "Developer",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray
         )
@@ -117,37 +122,19 @@ fun DeveloperProfileHeader(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = developer.location,
+                text = developer.location ?: "Unknown",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Rating and Reviews
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            RatingBar(rating = developer.rating)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "${developer.rating}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = " (${developer.reviewCount} ulasan)",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Stats (Proyek Selesai & Ulasan)
+        // Stats (Proyek Selesai only)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.Center
         ) {
             StatItem(value = developer.projectsCompleted.toString(), label = "Proyek Selesai")
-            StatItem(value = developer.reviewCount.toString(), label = "Ulasan")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -157,10 +144,10 @@ fun DeveloperProfileHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+            colors = ButtonDefaults.buttonColors(containerColor = Primary),
             shape = MaterialTheme.shapes.medium
         ) {
-            Text(text = actionButtonText, style = MaterialTheme.typography.titleMedium)
+            Text(text = actionButtonText, style = MaterialTheme.typography.titleMedium, color = White)
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -172,7 +159,8 @@ fun StatItem(value: String, label: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
         )
         Text(
             text = label,

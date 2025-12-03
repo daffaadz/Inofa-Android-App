@@ -1,11 +1,13 @@
 package com.example.inofa_android_app.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.inofa_android_app.data.mockCategories
 import com.example.inofa_android_app.data.mockFeaturedDevelopers
@@ -17,8 +19,15 @@ import com.example.inofa_android_app.home.components.HomeSearchBar
 import com.example.inofa_android_app.home.components.HomeTopBar
 
 @Composable
-fun HomeScreen(onDeveloperClick: (Int) -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
+fun HomeScreen(
+    onDeveloperClick: (Int) -> Unit = {},
+    onNavigateToDiscover: () -> Unit = {},
+    onNavigateToMessages: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
+) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.White)) {
         // Content area with scrolling
         Column(
             modifier = Modifier
@@ -45,12 +54,16 @@ fun HomeScreen(onDeveloperClick: (Int) -> Unit) {
         }
 
         // 6. Bottom Navigation Bar
-        HomeBottomNavBar()
+        HomeBottomNavBar(
+            onNavigateToDiscover = onNavigateToDiscover,
+            onNavigateToMessages = onNavigateToMessages,
+            onNavigateToProfile = onNavigateToProfile
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(onDeveloperClick = {})
+    HomeScreen()
 }

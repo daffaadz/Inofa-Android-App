@@ -45,7 +45,8 @@ fun HomeTopBar() {
         IconButton(onClick = { /* TODO: Handle notification click */ }) {
             Icon(
                 imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications"
+                contentDescription = "Notifications",
+                tint = Color.Black
             )
         }
     }
@@ -65,7 +66,7 @@ fun HomeDiscoverSection() {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Star, // Placeholder for Discover icon
+                    imageVector = Icons.Default.Search,
                     contentDescription = "Discover",
                     tint = PrimaryGreen,
                     modifier = Modifier.size(24.dp)
@@ -82,11 +83,14 @@ fun HomeDiscoverSection() {
             Text(
                 text = "Selamat Malam!",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Temukan developer profesional untuk proyek Anda.",
-                style = MaterialTheme.typography.bodyMedium
+                text = "Temukan developer profesional\nuntuk proyek Anda.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black.copy(alpha = 0.7f)
             )
         }
     }
@@ -98,11 +102,12 @@ fun HomeSearchBar() {
     OutlinedTextField(
         value = "",
         onValueChange = { /* TODO: Handle search input */ },
-        placeholder = { Text("Cari developer, skill, atau proyek...") },
+        placeholder = { Text("Cari developer, skill, atau proyek...", color = Color.Gray) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search"
+                contentDescription = "Search",
+                tint = Color.Gray
             )
         },
         modifier = Modifier
@@ -126,6 +131,7 @@ fun HomeCategoriesSection(categories: List<Category>) {
             text = "Kategori",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
+            color = Color.Black,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
@@ -150,7 +156,7 @@ fun HomeCategoriesSection(categories: List<Category>) {
 fun CategoryItem(category: Category) {
     Card(
         modifier = Modifier
-            .size(100.dp)
+            .width(120.dp)
             .clickable { /* TODO: Handle category click */ },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -158,35 +164,42 @@ fun CategoryItem(category: Category) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start
         ) {
-            // Icon Placeholder
-            Icon(
-                imageVector = when (category.name) {
-                    "Full-stack" -> Icons.Default.Star
-                    "UI/UX" -> Icons.Default.Star
-                    "Mobile" -> Icons.Default.Star
-                    else -> Icons.Default.Star
-                },
-                contentDescription = category.name,
-                tint = PrimaryGreen,
-                modifier = Modifier.size(24.dp)
-            )
-            Column {
-                Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "${category.devCount} devs",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+            // Icon in Circle Background
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(LightGreenBackground),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = when (category.name) {
+                        "Full-stack" -> Icons.Default.Star
+                        "UI/UX" -> Icons.Default.Star
+                        "Mobile" -> Icons.Default.Star
+                        else -> Icons.Default.Star
+                    },
+                    contentDescription = category.name,
+                    tint = PrimaryGreen,
+                    modifier = Modifier.size(24.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = category.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+            Text(
+                text = "${category.devCount} devs",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
         }
     }
 }
@@ -209,7 +222,8 @@ fun HomeFeaturedDevelopersSection(
                 Text(
                     text = "Developer Unggulan",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
                 Text(
                     text = "Rekomendasi terbaik untuk Anda",
@@ -269,10 +283,11 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
             Text(
                 text = developer.name,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
             Text(
-                text = developer.title,
+                text = if (developer.skills.isNotEmpty()) developer.skills.first() else "Developer",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -283,7 +298,8 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
                 Text(
                     text = "${developer.rating}",
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.Black
                 )
             }
         }
@@ -292,7 +308,11 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
 
 // --- Bottom Navigation Bar ---
 @Composable
-fun HomeBottomNavBar() {
+fun HomeBottomNavBar(
+    onNavigateToDiscover: () -> Unit = {},
+    onNavigateToMessages: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
+) {
     val items = listOf("Home", "Discover", "Messages", "Profile")
     val icons = listOf(
         Icons.Default.Home,
@@ -316,7 +336,14 @@ fun HomeBottomNavBar() {
                 },
                 label = { Text(item) },
                 selected = item == selectedItem,
-                onClick = { /* TODO: Handle navigation click */ },
+                onClick = {
+                    when (item) {
+                        "Discover" -> onNavigateToDiscover()
+                        "Messages" -> onNavigateToMessages()
+                        "Profile" -> onNavigateToProfile()
+                        else -> { /* Already on Home */ }
+                    }
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = PrimaryGreen,
                     selectedTextColor = PrimaryGreen,
@@ -338,6 +365,10 @@ fun HomeComponentsPreview() {
         HomeSearchBar()
         HomeCategoriesSection(mockCategories)
         HomeFeaturedDevelopersSection(mockFeaturedDevelopers, onDeveloperClick = {})
-        HomeBottomNavBar()
+        HomeBottomNavBar(
+            onNavigateToDiscover = {},
+            onNavigateToMessages = {},
+            onNavigateToProfile = {}
+        )
     }
 }
