@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warna dasar -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Warna brand -->
+    <color name="primary">#10B981</color>          <!-- hijau primary -->
+    <color name="primary_10">#10B9811A</color>
+    <color name="primary_20">#10B98133</color>
+    <color name="secondary">#FCD34D</color>       <!-- kuning secondary-->
+    <color name="secondary_10">#FCD34D1A</color>
+    <color name="secondary_20">#FCD34D33</color>
+
+    <!-- Netral -->
+    <color name="background_light">#F8F9FA</color>
+    <color name="font_medium">#6B7280</color>
+</resources>
