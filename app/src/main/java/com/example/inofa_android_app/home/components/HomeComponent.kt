@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Category
 import com.example.inofa_android_app.data.Developer
+import com.example.inofa_android_app.data.Project
 import com.example.inofa_android_app.data.mockCategories
 import com.example.inofa_android_app.data.mockFeaturedDevelopers
 import com.example.inofa_android_app.developer_profile.components.RatingBar
@@ -57,7 +58,7 @@ fun HomeTopBar() {
 
 // --- Discover Section ---
 @Composable
-fun HomeDiscoverSection() {
+fun HomeDiscoverSection(userName: String = "User") {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -84,14 +85,15 @@ fun HomeDiscoverSection() {
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Selamat Malam!",
+                text = "Selamat Datang, $userName!",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(4.dp))
+            val isDeveloper = UserRoleStorage.isDeveloper()
             Text(
-                text = "Temukan developer profesional\nuntuk proyek Anda.",
+                text = if (isDeveloper) "Temukan proyek yang sesuai\ndengan keahlian Anda." else "Temukan developer profesional\nuntuk proyek Anda.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Black.copy(alpha = 0.7f)
             )
@@ -101,10 +103,13 @@ fun HomeDiscoverSection() {
 
 // --- Search Bar ---
 @Composable
-fun HomeSearchBar() {
+fun HomeSearchBar(
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {}
+) {
     OutlinedTextField(
-        value = "",
-        onValueChange = { /* TODO: Handle search input */ },
+        value = searchQuery,
+        onValueChange = onSearchQueryChange,
         placeholder = { Text("Cari developer, skill, atau proyek...", color = Color.Gray) },
         leadingIcon = {
             Icon(
@@ -122,7 +127,8 @@ fun HomeSearchBar() {
             unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White
-        )
+        ),
+        singleLine = true
     )
 }
 
@@ -402,6 +408,119 @@ fun HomeBottomNavBar(
                 indicatorColor = Color.White
             )
         )
+    }
+}
+
+// --- Category Tabs for Developer Filter ---
+@Composable
+fun HomeCategoryTabs(
+    categories: List<String>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(categories.size) { index ->
+            val category = categories[index]
+            FilterChip(
+                selected = category == selectedCategory,
+                onClick = { onCategorySelected(category) },
+                label = { Text(category) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = PrimaryGreen,
+                    selectedLabelColor = Color.White,
+                    containerColor = Color.White,
+                    labelColor = Color.Black
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = if (category == selectedCategory) PrimaryGreen else Color.LightGray,
+                    selectedBorderColor = PrimaryGreen,
+                    enabled = true,
+                    selected = category == selectedCategory
+                )
+            )
+        }
+    }
+}
+
+// --- Project Card for Developer Homepage ---
+@Composable
+fun HomeProjectCard(project: Project) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable { /* TODO: Navigate to project detail */ },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Project Icon
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(PrimaryGreen.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Work,
+                    contentDescription = "Project",
+                    tint = PrimaryGreen,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Project Info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = project.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = project.description ?: "Tidak ada deskripsi",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AttachMoney,
+                        contentDescription = "Budget",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (project.budget != null) "Rp ${String.format("%,.0f", project.budget)}" else "Budget belum ditentukan",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+                if (project.skillRequirements.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = project.skillRequirements.joinToString(", "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = PrimaryGreen,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
     }
 }
 

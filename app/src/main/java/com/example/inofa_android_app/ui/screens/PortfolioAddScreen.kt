@@ -15,13 +15,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.inofa_android_app.BuildConfig
 import com.example.inofa_android_app.utils.ImageUtils
@@ -50,6 +56,7 @@ fun PortfolioAddScreen(
     var technologies by remember { mutableStateOf("") }
     var link by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
+    var imageUrlInput by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current
@@ -58,12 +65,11 @@ fun PortfolioAddScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Image picker launcher
-    val imagePickerLauncher = rememberLauncherForActivityResult(
+    val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
-            // Upload image when selected
             viewModel.uploadImage(context, it)
         }
     }
@@ -87,11 +93,10 @@ fun PortfolioAddScreen(
                 description = state.portfolio.description ?: ""
                 link = state.portfolio.link ?: ""
                 imageUrl = state.portfolio.image_url ?: ""
+                imageUrlInput = imageUrl
             }
             is PortfolioAddUiState.ImageUploaded -> {
                 imageUrl = state.imageUrl
-                android.util.Log.d("PortfolioAddScreen", "ImageUploaded! Setting imageUrl to: ${state.imageUrl}")
-                android.util.Log.d("PortfolioAddScreen", "Current imageUrl variable: $imageUrl")
                 snackbarHostState.showSnackbar("Gambar berhasil diupload!")
             }
             is PortfolioAddUiState.Error -> {
@@ -99,9 +104,7 @@ fun PortfolioAddScreen(
             }
             PortfolioAddUiState.Idle,
             PortfolioAddUiState.Loading,
-            PortfolioAddUiState.UploadingImage -> {
-                // no-op
-            }
+            PortfolioAddUiState.UploadingImage -> {}
         }
     }
 
@@ -109,286 +112,381 @@ fun PortfolioAddScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(if (isEditMode) "Edit Portfolio" else "Tambah Portfolio Baru") },
+                title = {
+                    Text(
+                        if (isEditMode) "Edit Portfolio" else "Tambah Portfolio Baru",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
                 )
             )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
-        ) {
+        },
+        containerColor = Color(0xFFF5F5F5)
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 20.dp)
+                    .padding(bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Image Upload Section
-                Text(
-                    text = "Gambar Proyek",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
-                        .clickable { imagePickerLauncher.launch("image/*") },
-                    contentAlignment = Alignment.Center
+                // Image Section Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE0E0E0))
                 ) {
-                    val resolvedImageUrl = ImageUtils.toAbsoluteUrl(imageUrl)
-                    val painterSource = selectedImageUri ?: resolvedImageUrl
-
-                    if (painterSource != null) {
-                        // Show selected or existing image
-                        Image(
-                            painter = rememberAsyncImagePainter(painterSource),
-                            contentDescription = "Selected image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Gambar Proyek",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF212121)
                         )
 
-                        // Remove button
-                        IconButton(
-                            onClick = {
-                                selectedImageUri = null
-                                imageUrl = ""
-                            },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp)
-                                .size(32.dp)
-                                .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(16.dp))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Remove image",
-                                tint = Color.Black
-                            )
-                        }
-                    } else {
-                        // Show upload placeholder
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Upload",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Klik untuk upload gambar",
-                                fontSize = 12.sp,
-                                color = Color.Gray,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = "PNG, JPG hingga 5MB",
-                                fontSize = 10.sp,
-                                color = Color.LightGray,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                    
-                    // Show upload progress
-                    if (uiState is PortfolioAddUiState.UploadingImage) {
                         Box(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.5f)),
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .background(Color(0xFFFAFAFA), RoundedCornerShape(8.dp))
+                                .drawBehind {
+                                    val dashWidth = 10.dp.toPx()
+                                    val dashGap = 10.dp.toPx()
+                                    val pathEffect = PathEffect.dashPathEffect(
+                                        intervals = floatArrayOf(dashWidth, dashGap),
+                                        phase = 0f
+                                    )
+                                    drawRoundRect(
+                                        color = androidx.compose.ui.graphics.Color(0xFFBDBDBD),
+                                        style = Stroke(
+                                            width = 2.dp.toPx(),
+                                            pathEffect = pathEffect
+                                        ),
+                                        cornerRadius = CornerRadius(8.dp.toPx())
+                                    )
+                                }
+                                .clickable { launcher.launch("image/*") },
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(color = Color.White)
+                            if (imageUrl.isNotBlank()) {
+                                AsyncImage(
+                                    model = ImageUtils.toAbsoluteUrl(imageUrl),
+                                    contentDescription = "Selected image",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add image",
+                                        tint = Color(0xFF9E9E9E),
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Text(
+                                        text = "Klik untuk upload gambar",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF424242)
+                                    )
+                                    Text(
+                                        text = "PNG, JPG hingga 5MB",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF9E9E9E)
+                                    )
+                                }
+                            }
+
+                            if (uiState is PortfolioAddUiState.UploadingImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.White)
+                                }
+                            }
                         }
+
+                        Text(
+                            text = "Atau masukkan URL gambar",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF424242)
+                        )
+
+                        OutlinedTextField(
+                            value = imageUrlInput,
+                            onValueChange = {
+                                imageUrlInput = it
+                                if (it.isNotBlank()) {
+                                    imageUrl = it
+                                }
+                            },
+                            placeholder = {
+                                Text(
+                                    "https://example.com/image.jpg",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF9E9E9E)
+                                )
+                            },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedContainerColor = Color(0xFFFAFAFA),
+                                focusedContainerColor = Color(0xFFFAFAFA),
+                                unfocusedBorderColor = Color(0xFFE0E0E0),
+                                focusedBorderColor = Color(0xFF00BFA5)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        )
                     }
                 }
 
-                Text(
-                    text = "Atau masukkan URL gambar",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-
-                OutlinedTextField(
-                    value = imageUrl,
-                    onValueChange = { imageUrl = it },
-                    placeholder = { Text("https://example.com/image.jpg", fontSize = 14.sp) },
-                    singleLine = true,
+                // Detail Proyek Card
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White
-                    )
-                )
-
-                // Detail Proyek Section
-                Text(
-                    text = "Detail Proyek",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
-
-                Text(
-                    text = "Judul Proyek",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    placeholder = { Text("Contoh: E-Commerce Platform", fontSize = 14.sp) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White
-                    )
-                )
-
-                Text(
-                    text = "Deskripsi",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    placeholder = { 
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
                         Text(
-                            "Jelaskan tentang proyek ini, fitur utama, dan teknologi yang digunakan",
-                            fontSize = 14.sp
-                        ) 
-                    },
-                    minLines = 4,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White
-                    )
-                )
+                            text = "Detail Proyek",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF212121)
+                        )
 
-                Text(
-                    text = "Teknologi yang Digunakan",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Judul Proyek",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF424242)
+                            )
+                            OutlinedTextField(
+                                value = title,
+                                onValueChange = { title = it },
+                                placeholder = {
+                                    Text(
+                                        "Contoh: E-Commerce Platform",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF9E9E9E)
+                                    )
+                                },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFFFAFAFA),
+                                    focusedContainerColor = Color(0xFFFAFAFA),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                                    focusedBorderColor = Color(0xFF00BFA5)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        }
 
-                OutlinedTextField(
-                    value = technologies,
-                    onValueChange = { technologies = it },
-                    placeholder = { Text("Ketik teknologi (misal: React) dan tekan Enter", fontSize = 14.sp) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White
-                    )
-                )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Deskripsi",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF424242)
+                            )
+                            OutlinedTextField(
+                                value = description,
+                                onValueChange = { description = it },
+                                placeholder = {
+                                    Text(
+                                        "Jelaskan tentang proyek ini, fitur utama, dan teknologi yang digunakan",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF9E9E9E)
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFFFAFAFA),
+                                    focusedContainerColor = Color(0xFFFAFAFA),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                                    focusedBorderColor = Color(0xFF00BFA5)
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                maxLines = 5
+                            )
+                        }
 
-                Text(
-                    text = "Link Proyek (Opsional)",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Teknologi yang Digunakan",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF424242)
+                            )
+                            OutlinedTextField(
+                                value = technologies,
+                                onValueChange = { technologies = it },
+                                placeholder = {
+                                    Text(
+                                        "Ketik teknologi (misal: React) dan tekan Enter",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF9E9E9E)
+                                    )
+                                },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFFFAFAFA),
+                                    focusedContainerColor = Color(0xFFFAFAFA),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                                    focusedBorderColor = Color(0xFF00BFA5)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        }
 
-                OutlinedTextField(
-                    value = link,
-                    onValueChange = { link = it },
-                    placeholder = { Text("https://project-demo.com", fontSize = 14.sp) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "Link Proyek (Opsional)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF424242)
+                            )
+                            OutlinedTextField(
+                                value = link,
+                                onValueChange = { link = it },
+                                placeholder = {
+                                    Text(
+                                        "https://project-demo.com",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF9E9E9E)
+                                    )
+                                },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFFFAFAFA),
+                                    focusedContainerColor = Color(0xFFFAFAFA),
+                                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                                    focusedBorderColor = Color(0xFF00BFA5)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        }
+                    }
+                }
             }
 
             // Bottom Buttons
-            Row(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .align(Alignment.BottomCenter),
+                color = Color.White,
+                shadowElevation = 8.dp
             ) {
-                OutlinedButton(
-                    onClick = onBackClick,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF00BFA5)
-                    ),
-                    border = BorderStroke(1.dp, Color(0xFF00BFA5))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Batal")
-                }
-
-                Button(
-                    onClick = {
-                        android.util.Log.d("PortfolioAddScreen", "Button clicked! title: $title, isEditMode: $isEditMode")
-                        android.util.Log.d("PortfolioAddScreen", "Current uiState: $uiState")
-                        
-                        if (title.isNotBlank()) {
-                            if (isEditMode) {
-                                android.util.Log.d("PortfolioAddScreen", "Calling updatePortfolio")
-                                viewModel.updatePortfolio(
-                                    title = title,
-                                    description = description.ifBlank { null },
-                                    link = link.ifBlank { null },
-                                    imageUrl = imageUrl.ifBlank { null }
-                                )
-                            } else {
-                                android.util.Log.d("PortfolioAddScreen", "Calling createPortfolio")
-                                viewModel.createPortfolio(
-                                    title = title,
-                                    description = description.ifBlank { null },
-                                    link = link.ifBlank { null },
-                                    imageUrl = imageUrl.ifBlank { null }
-                                )
+                    Button(
+                        onClick = {
+                            if (title.isNotBlank()) {
+                                if (isEditMode) {
+                                    viewModel.updatePortfolio(
+                                        title = title,
+                                        description = description.ifBlank { null },
+                                        link = link.ifBlank { null },
+                                        imageUrl = imageUrl.ifBlank { null }
+                                    )
+                                } else {
+                                    viewModel.createPortfolio(
+                                        title = title,
+                                        description = description.ifBlank { null },
+                                        link = link.ifBlank { null },
+                                        imageUrl = imageUrl.ifBlank { null }
+                                    )
+                                }
                             }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF00BFA5),
+                            disabledContainerColor = Color(0xFF00BFA5).copy(alpha = 0.5f)
+                        ),
+                        enabled = title.isNotBlank() && uiState !is PortfolioAddUiState.Loading && uiState !is PortfolioAddUiState.UploadingImage,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        if (uiState is PortfolioAddUiState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
                         } else {
-                            android.util.Log.w("PortfolioAddScreen", "Title is blank!")
+                            Text(
+                                if (isEditMode) "Simpan Perubahan" else "Simpan Portfolio",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF00BFA5)
-                    ),
-                    enabled = title.isNotBlank() && uiState !is PortfolioAddUiState.Loading && uiState !is PortfolioAddUiState.UploadingImage
-                ) {
-                    if (uiState is PortfolioAddUiState.Loading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
+                    }
+
+                    OutlinedButton(
+                        onClick = onBackClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF00BFA5)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFF00BFA5)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            "Batal",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
                         )
-                    } else {
-                        Text(if (isEditMode) "Simpan Perubahan" else "Simpan Portfolio")
                     }
                 }
             }
