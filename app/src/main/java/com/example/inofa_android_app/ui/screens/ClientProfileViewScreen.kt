@@ -18,9 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Project
+import com.example.inofa_android_app.utils.ImageUtils
 import com.example.inofa_android_app.ui.viewmodel.ProjectUiState
 import com.example.inofa_android_app.ui.viewmodel.ProjectViewModel
 import com.example.inofa_android_app.ui.viewmodel.ProfileViewModel
@@ -41,6 +44,7 @@ fun ClientProfileViewScreen(
 ) {
     val projectState by projectViewModel.uiState.collectAsStateWithLifecycle()
     val profileState by profileViewModel.profileState.collectAsStateWithLifecycle()
+    val photoUrl by profileViewModel.photoUrl.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         projectViewModel.loadMyProjects()
@@ -174,12 +178,23 @@ fun ClientProfileViewScreen(
                                 .background(Color(0xFFE0E0E0)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(60.dp),
-                                tint = Color.Gray
-                            )
+                            if (photoUrl != null) {
+                                AsyncImage(
+                                    model = ImageUtils.toAbsoluteUrl(photoUrl),
+                                    contentDescription = "Profile photo",
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(60.dp),
+                                    tint = Color.Gray
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))

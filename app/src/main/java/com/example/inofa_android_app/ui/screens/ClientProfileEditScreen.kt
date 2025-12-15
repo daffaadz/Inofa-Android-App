@@ -58,26 +58,45 @@ fun ClientProfileEditScreen(
     var phone by remember { mutableStateOf("") }
     var company by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var hasLoadedInitialData by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    // Load initial profile data
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
+
+    // Handle profile state changes
     LaunchedEffect(profileState) {
         when (val state = profileState) {
             is ProfileDataState.Success -> {
-                val profile = state.profile
-                name = profile.name
-                email = profile.name // TODO: Get actual email
-                phone = profile.whatsapp ?: ""
-                company = profile.location ?: "" // Using location as company for now
-                onSuccess()
+                if (!hasLoadedInitialData) {
+                    // Initial load - populate fields
+                    val profile = state.profile
+                    name = profile.name
+                    email = profile.name // TODO: Get actual email
+                    phone = profile.whatsapp ?: ""
+                    company = profile.location ?: ""
+                    hasLoadedInitialData = true
+                } else {
+                    // Update successful - show message and navigate back
+                    snackbarHostState.showSnackbar("Profile berhasil diperbarui!")
+                    kotlinx.coroutines.delay(500)
+                    onSuccess()
+                }
+            }
+            is ProfileDataState.Error -> {
+                if (hasLoadedInitialData) {
+                    // Only show error for update, not initial load
+                    snackbarHostState.showSnackbar("Error: ${state.message}")
+                }
             }
             else -> {}
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadProfile()
-    }
-
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
