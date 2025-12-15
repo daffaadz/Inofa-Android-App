@@ -29,17 +29,37 @@ import com.example.inofa_android_app.ui.theme.Black
 import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.ui.theme.FontMedium
 import com.example.inofa_android_app.ui.theme.Primary10
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inofa_android_app.ui.viewmodel.AuthViewModel
+import com.example.inofa_android_app.ui.viewmodel.NextStep
 
 @Composable
 fun SignUpScreen(
-    onSignUpClick: () -> Unit = {},
-    onSignInClick: () -> Unit = {}
+    onNavigateHome: () -> Unit = {},
+    onNavigateProfileSetup: () -> Unit = {},
+    onNavigateRole: () -> Unit = {},
+    onSignInClick: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var selectedRole by remember { mutableStateOf("client") } // "client" or "developer"
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.token, uiState.nextStep) {
+        if (uiState.token != null && uiState.nextStep != null) {
+            when (uiState.nextStep) {
+                NextStep.HOME -> onNavigateHome()
+                NextStep.COMPLETE_PROFILE -> onNavigateProfileSetup()
+                NextStep.SET_ROLE -> onNavigateRole()
+                else -> Unit
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -256,7 +276,9 @@ fun SignUpScreen(
 
         // Sign Up Button
         Button(
-            onClick = onSignUpClick,
+            onClick = {
+                viewModel.register(email, password, selectedRole)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -267,9 +289,19 @@ fun SignUpScreen(
             )
         ) {
             Text(
-                text = "Daftar",
+                text = if (uiState.isLoading) "Memproses..." else "Daftar",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        if (uiState.error != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = uiState.error ?: "",
+                color = Color.Red,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
             )
         }
 

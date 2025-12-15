@@ -23,30 +23,50 @@ import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.ui.theme.FontMedium
 import com.example.inofa_android_app.ui.theme.Secondary
 import com.example.inofa_android_app.ui.theme.BackgroundLight
-import com.example.inofa_android_app.data.mockProjects
-
-data class ProjectDisplay(
-    val id: Int,
-    val title: String,
-    val developerName: String,
-    val status: String, // "Pending", "In Progress", "Selesai"
-    val timeAgo: String
-)
-
-// Convert backend Project to display format
-val mockProjectsDisplay = listOf(
-    ProjectDisplay(1, "Website Company Profile", "Sarah Putri", "Pending", "2 jam lalu"),
-    ProjectDisplay(2, "Aplikasi Mobile E-Commerce", "Ahmad Nur Hidayat", "In Progress", "5 jam lalu"),
-    ProjectDisplay(3, "Dashboard Analytics", "Budi Santoso", "Selesai", "1 hari lalu"),
-    ProjectDisplay(4, "REST API Backend", "Dewi Lestari", "Selesai", "3 hari lalu"),
-)
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inofa_android_app.data.Project
+import com.example.inofa_android_app.ui.viewmodel.ProjectUiState
+import com.example.inofa_android_app.ui.viewmodel.ProjectViewModel
+import com.example.inofa_android_app.ui.viewmodel.ProfileViewModel
+import com.example.inofa_android_app.ui.viewmodel.ProfileDataState
+import com.example.inofa_android_app.data.UserRoleStorage
+import com.example.inofa_android_app.data.repository.AuthRepository
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.text.style.TextAlign
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToDiscover: () -> Unit = {},
-    onNavigateToMessages: () -> Unit = {}
+    onNavigateToMessages: () -> Unit = {},
+    onNavigateToProjects: () -> Unit = {},
+    onNavigateToPortfolio: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    projectViewModel: ProjectViewModel = viewModel(),
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
+    val isDeveloper = UserRoleStorage.isDeveloper()
+    val projectState by projectViewModel.uiState.collectAsStateWithLifecycle()
+    val profileState by profileViewModel.profileState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        if (!isDeveloper) {
+            projectViewModel.loadMyProjects()
+        }
+        profileViewModel.loadProfile()
+    }
+
+    val projects: List<Project> = if (!isDeveloper) {
+        when (val state = projectState) {
+            is ProjectUiState.Success -> state.projects
+            else -> emptyList()
+        }
+    } else emptyList()
+
     Column(modifier = Modifier.fillMaxSize()) {
         // Content
         LazyColumn(
@@ -61,27 +81,61 @@ fun ProfileScreen(
 
             // Welcome Section
             item {
-                WelcomeSection()
+                val userName = when (val state = profileState) {
+                    is ProfileDataState.Success -> state.profile.name
+                    else -> null
+                }
+                WelcomeSection(userName)
             }
 
-            // Stats Cards
+            if (isDeveloper) {
+                // Show profile edit form for developer
+                item {
+                    ProfileEditSection(profileViewModel = profileViewModel)
+                }
+            } else {
+                // Show stats and projects for client
+                // Stats Cards
+                item {
+                    StatsSection(activeProjects = projects.size, completedProjects = 0)
+                }
+
+                // Pending Payment Banner (if any)
+                item {
+                    PendingPaymentBanner()
+                }
+
+                // Projects Section Header
+                item {
+                    ProjectsSectionHeader(projectCount = projects.size)
+                }
+
+                when (val state = projectState) {
+                    ProjectUiState.Loading, ProjectUiState.Idle -> {
+                        item {
+                            LoadingProjects()
+                        }
+                    }
+                    is ProjectUiState.Error -> {
+                        item {
+                            ErrorProjects(message = state.message)
+                        }
+                    }
+                    is ProjectUiState.Success -> {
+                        items(state.projects) { project ->
+                            ProjectCard(project = project)
+                        }
+                    }
+                }
+            }
+
             item {
-                StatsSection()
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Pending Payment Banner (if any)
+            // Logout Button
             item {
-                PendingPaymentBanner()
-            }
-
-            // Projects Section Header
-            item {
-                ProjectsSectionHeader()
-            }
-
-            // Project List
-            items(mockProjectsDisplay) { project ->
-                ProjectCard(project = project)
+                LogoutButton(onLogout = onLogout)
             }
 
             item {
@@ -93,7 +147,9 @@ fun ProfileScreen(
         ProfileBottomNavBar(
             onNavigateToHome = onNavigateToHome,
             onNavigateToDiscover = onNavigateToDiscover,
-            onNavigateToMessages = onNavigateToMessages
+            onNavigateToMessages = onNavigateToMessages,
+            onNavigateToProjects = onNavigateToProjects,
+            onNavigateToPortfolio = onNavigateToPortfolio
         )
     }
 }
@@ -125,7 +181,7 @@ fun ProfileTopBar() {
 }
 
 @Composable
-fun WelcomeSection() {
+fun WelcomeSection(name: String?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,8 +189,8 @@ fun WelcomeSection() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Selamat Siang, Citra!",
-            fontSize = 24.sp,
+            text = "Selamat datang, ${name?.takeIf { it.isNotBlank() } ?: "Pengguna"}!",
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
@@ -147,7 +203,7 @@ fun WelcomeSection() {
 }
 
 @Composable
-fun StatsSection() {
+fun StatsSection(activeProjects: Int, completedProjects: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,7 +213,7 @@ fun StatsSection() {
         // Active Projects Card
         StatsCard(
             icon = Icons.Default.Star,
-            count = "2",
+            count = activeProjects.toString(),
             label = "Proyek Aktif",
             iconColor = Primary,
             modifier = Modifier.weight(1f)
@@ -166,7 +222,7 @@ fun StatsSection() {
         // Completed Projects Card
         StatsCard(
             icon = Icons.Default.Check,
-            count = "3",
+            count = completedProjects.toString(),
             label = "Proyek Selesai",
             iconColor = Primary,
             modifier = Modifier.weight(1f)
@@ -272,7 +328,7 @@ fun PendingPaymentBanner() {
 }
 
 @Composable
-fun ProjectsSectionHeader() {
+fun ProjectsSectionHeader(projectCount: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -287,7 +343,7 @@ fun ProjectsSectionHeader() {
             color = Color.Black
         )
         Text(
-            text = "6 proyek",
+            text = "$projectCount proyek",
             fontSize = 14.sp,
             color = FontMedium
         )
@@ -295,7 +351,7 @@ fun ProjectsSectionHeader() {
 }
 
 @Composable
-fun ProjectCard(project: ProjectDisplay) {
+fun ProjectCard(project: Project) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -320,7 +376,7 @@ fun ProjectCard(project: ProjectDisplay) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = project.developerName.first().toString(),
+                    text = project.title.firstOrNull()?.toString() ?: "?",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Primary
@@ -338,17 +394,21 @@ fun ProjectCard(project: ProjectDisplay) {
                     color = Color.Black
                 )
                 Text(
-                    text = project.developerName,
+                    text = project.description ?: "",
                     fontSize = 12.sp,
                     color = FontMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    StatusBadge(status = project.status)
-                    Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (project.budget != null) "Budget: Rp ${project.budget}" else "Budget tidak tersedia",
+                    fontSize = 12.sp,
+                    color = FontMedium
+                )
+                if (project.skillRequirements.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = project.timeAgo,
-                        fontSize = 11.sp,
+                        text = "Skill: ${project.skillRequirements.joinToString(", ")}",
+                        fontSize = 12.sp,
                         color = FontMedium
                     )
                 }
@@ -365,34 +425,14 @@ fun ProjectCard(project: ProjectDisplay) {
 }
 
 @Composable
-fun StatusBadge(status: String) {
-    val (backgroundColor, textColor) = when (status) {
-        "Pending" -> Color(0xFFFEF3C7) to Color(0xFFF59E0B)
-        "In Progress" -> Color(0xFFDCFCE7) to Color(0xFF10B981)
-        "Selesai" -> Color(0xFFE0E7FF) to Color(0xFF6366F1)
-        else -> Color.LightGray to Color.Black
-    }
-
-    Surface(
-        shape = RoundedCornerShape(4.dp),
-        color = backgroundColor
-    ) {
-        Text(
-            text = status,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-    }
-}
-
-@Composable
 fun ProfileBottomNavBar(
     onNavigateToHome: () -> Unit,
     onNavigateToDiscover: () -> Unit,
-    onNavigateToMessages: () -> Unit
+    onNavigateToMessages: () -> Unit,
+    onNavigateToProjects: () -> Unit,
+    onNavigateToPortfolio: () -> Unit
 ) {
+    val isClient = UserRoleStorage.isClient()
     NavigationBar(
         containerColor = Color.White,
         contentColor = Primary
@@ -423,19 +463,21 @@ fun ProfileBottomNavBar(
                 indicatorColor = Color.White
             )
         )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
-            label = { Text("Messages") },
-            selected = false,
-            onClick = onNavigateToMessages,
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                selectedTextColor = Primary,
-                unselectedIconColor = FontMedium,
-                unselectedTextColor = FontMedium,
-                indicatorColor = Color.White
+        if (isClient) {
+            NavigationBarItem(
+                icon = { Icon(Icons.Default.Add, contentDescription = "Projects") },
+                label = { Text("Projects") },
+                selected = false,
+                onClick = onNavigateToProjects,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primary,
+                    selectedTextColor = Primary,
+                    unselectedIconColor = FontMedium,
+                    unselectedTextColor = FontMedium,
+                    indicatorColor = Color.White
+                )
             )
-        )
+        }
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") },
@@ -456,4 +498,214 @@ fun ProfileBottomNavBar(
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen()
+}
+
+@Composable
+fun LoadingProjects() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularProgressIndicator(color = Primary)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = "Memuat proyek...", color = FontMedium)
+    }
+}
+
+@Composable
+fun ErrorProjects(message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            color = Color.Black,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun LogoutButton(onLogout: () -> Unit) {
+    val authRepository = remember { AuthRepository() }
+    val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Keluar Akun") },
+            text = { Text("Apakah Anda yakin ingin keluar dari akun?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            authRepository.logout()
+                            onLogout()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Keluar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDialog = true }
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ExitToApp,
+                    contentDescription = "Logout",
+                    tint = Color.Red,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "Keluar Akun",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Red
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ProfileEditSection(profileViewModel: ProfileViewModel) {
+    val profileState by profileViewModel.profileState.collectAsStateWithLifecycle()
+    
+    var name by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var skillsText by remember { mutableStateOf("") }
+    var whatsapp by remember { mutableStateOf("") }
+
+    LaunchedEffect(profileState) {
+        if (profileState is ProfileDataState.Success) {
+            val profile = (profileState as ProfileDataState.Success).profile
+            name = profile.name
+            bio = profile.bio ?: ""
+            location = profile.location ?: ""
+            skillsText = profile.skills.joinToString(", ")
+            whatsapp = profile.whatsapp ?: ""
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Edit Profil",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nama") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = bio,
+                onValueChange = { bio = it },
+                label = { Text("Bio") },
+                minLines = 3,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = location,
+                onValueChange = { location = it },
+                label = { Text("Lokasi") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = skillsText,
+                onValueChange = { skillsText = it },
+                label = { Text("Skills (pisahkan dengan koma)") },
+                placeholder = { Text("Java, Kotlin, Android") },
+                minLines = 2,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = whatsapp,
+                onValueChange = { whatsapp = it },
+                label = { Text("WhatsApp") },
+                placeholder = { Text("6281234567890") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            Button(
+                onClick = {
+                    val skillsList = skillsText.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                    profileViewModel.updateProfile(
+                        name = name,
+                        bio = bio.ifBlank { null },
+                        location = location.ifBlank { null },
+                        skills = skillsList,
+                        whatsapp = whatsapp.ifBlank { null }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Simpan Perubahan")
+            }
+        }
+    }
 }

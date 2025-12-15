@@ -19,18 +19,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.ui.theme.FontMedium
+import com.example.inofa_android_app.ui.viewmodel.NextStep
+import com.example.inofa_android_app.ui.viewmodel.AuthViewModel
 
 @Composable
 fun SignInScreen(
-    onSignInClick: () -> Unit = {},
+    onNavigateHome: () -> Unit = {},
+    onNavigateProfileSetup: () -> Unit = {},
+    onNavigateRole: () -> Unit = {},
     onSignUpClick: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {}
+    onForgotPasswordClick: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.token, uiState.nextStep) {
+        if (uiState.token != null && uiState.nextStep != null) {
+            when (uiState.nextStep) {
+                NextStep.HOME -> onNavigateHome()
+                NextStep.COMPLETE_PROFILE -> onNavigateProfileSetup()
+                NextStep.SET_ROLE -> onNavigateRole()
+                else -> Unit
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -157,7 +177,9 @@ fun SignInScreen(
 
         // Sign In Button
         Button(
-            onClick = onSignInClick,
+            onClick = {
+                viewModel.login(email, password)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -168,9 +190,19 @@ fun SignInScreen(
             )
         ) {
             Text(
-                text = "Masuk",
+                text = if (uiState.isLoading) "Memproses..." else "Masuk",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        if (uiState.error != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = uiState.error ?: "",
+                color = Color.Red,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
             )
         }
 

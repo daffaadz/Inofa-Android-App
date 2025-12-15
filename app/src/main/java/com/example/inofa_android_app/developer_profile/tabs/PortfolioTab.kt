@@ -19,9 +19,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.inofa_android_app.R
 import com.example.inofa_android_app.data.PortfolioItem
 import com.example.inofa_android_app.data.mockDeveloper
+import com.example.inofa_android_app.utils.ImageUtils
 
 @Composable
 fun PortfolioTab(portfolio: List<PortfolioItem>) {
@@ -51,22 +53,21 @@ fun PortfolioItemCard(item: PortfolioItem) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Placeholder for Image. In a real app, you would use Coil/Glide
-            // Since we don't have the actual images, we'll use a colored box with text overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.LightGray.copy(alpha = 0.5f))
-            ) {
-                // In a real app, replace this Box with:
-                /*
-                Image(
-                    painter = painterResource(id = R.drawable.mock_portfolio_image), // Replace with actual resource
+            // Display actual portfolio image
+            val imageUrl = ImageUtils.toAbsoluteUrl(item.imageUrl)
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                */
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray.copy(alpha = 0.5f))
+                )
             }
 
             // Overlay for text

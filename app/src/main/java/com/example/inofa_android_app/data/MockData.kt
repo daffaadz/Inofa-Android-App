@@ -35,6 +35,7 @@ data class Developer(
     val skills: List<String>, // Array of skill strings dari backend
     val whatsapp: String?,
     val whatsappLink: String?,
+    val photoUrl: String?,
     val portfolio: List<PortfolioItem>,
     // Tambahan untuk UI
     val rating: Float = 0f,
@@ -115,6 +116,7 @@ val mockDeveloper = Developer(
     skills = listOf("React", "Node.js", "TypeScript", "Next.js", "PostgreSQL", "MongoDB", "Express.js", "React Native"),
     whatsapp = "6281234567890",
     whatsappLink = "https://wa.me/6281234567890",
+    photoUrl = null,
     portfolio = mockPortfolio,
     rating = 4.8f,
     reviewCount = 127,
@@ -140,6 +142,7 @@ val mockFeaturedDevelopers = listOf(
         skills = listOf("Node.js", "Python", "PostgreSQL", "MongoDB", "Redis", "Docker"),
         whatsapp = "6282345678901",
         whatsappLink = "https://wa.me/6282345678901",
+        photoUrl = null,
         portfolio = listOf(
             PortfolioItem(5, "API Gateway Service", "Microservices architecture dengan Kong API Gateway", "https://github.com/budi/api-gateway", null),
             PortfolioItem(6, "Payment Integration", "Integrasi payment gateway untuk e-commerce", null, null)
@@ -157,6 +160,7 @@ val mockFeaturedDevelopers = listOf(
         skills = listOf("Figma", "Adobe XD", "UI Design", "UX Research", "Prototyping", "User Testing"),
         whatsapp = "6283456789012",
         whatsappLink = "https://wa.me/6283456789012",
+        photoUrl = null,
         portfolio = listOf(
             PortfolioItem(7, "Mobile Banking App Design", "Complete UI/UX design untuk aplikasi mobile banking", "https://figma.com/banking-app", null),
             PortfolioItem(8, "E-Learning Platform", "Design system dan UI untuk platform pembelajaran online", "https://figma.com/elearning", null)
@@ -174,6 +178,7 @@ val mockFeaturedDevelopers = listOf(
         skills = listOf("Flutter", "Kotlin", "Android", "Firebase", "REST API", "SQLite"),
         whatsapp = "6284567890123",
         whatsappLink = "https://wa.me/6284567890123",
+        photoUrl = null,
         portfolio = listOf(
             PortfolioItem(9, "Delivery App", "Aplikasi delivery dengan real-time tracking", "https://play.google.com/delivery", null),
             PortfolioItem(10, "Fitness Tracker", "Aplikasi tracking workout dan kalori", null, null)
@@ -191,6 +196,7 @@ val mockFeaturedDevelopers = listOf(
         skills = listOf("React", "Vue.js", "JavaScript", "TypeScript", "Tailwind CSS", "Webpack"),
         whatsapp = "6285678901234",
         whatsappLink = "https://wa.me/6285678901234",
+        photoUrl = null,
         portfolio = listOf(
             PortfolioItem(11, "Admin Dashboard", "Dashboard dengan React dan Material-UI", "https://admin-dashboard.demo.com", null),
             PortfolioItem(12, "Landing Page", "Landing page untuk startup dengan animasi smooth", "https://startup-landing.com", null)
@@ -208,6 +214,7 @@ val mockFeaturedDevelopers = listOf(
         skills = listOf("AWS", "Docker", "Kubernetes", "Jenkins", "Terraform", "Linux"),
         whatsapp = "6286789012345",
         whatsappLink = "https://wa.me/6286789012345",
+        photoUrl = null,
         portfolio = listOf(
             PortfolioItem(13, "Cloud Migration", "Migrasi aplikasi monolith ke microservices di AWS", null, null),
             PortfolioItem(14, "CI/CD Pipeline", "Setup automated deployment dengan Jenkins", null, null)

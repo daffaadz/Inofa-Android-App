@@ -17,8 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Developer
 import com.example.inofa_android_app.data.mockDeveloper
+import com.example.inofa_android_app.utils.ImageUtils
 import com.example.inofa_android_app.ui.theme.InofaAndroidAppTheme
 import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.ui.theme.White
@@ -79,6 +81,7 @@ fun DeveloperProfileHeader(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Avatar
+        val photoUrl = ImageUtils.toAbsoluteUrl(developer.photoUrl)
         Box(
             modifier = Modifier
                 .size(100.dp)
@@ -86,12 +89,21 @@ fun DeveloperProfileHeader(
                 .background(LightGreenBackground),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = developer.name.first().toString(),
-                style = MaterialTheme.typography.headlineLarge,
-                color = PrimaryGreen,
-                fontWeight = FontWeight.Bold
-            )
+            if (photoUrl != null) {
+                AsyncImage(
+                    model = photoUrl,
+                    contentDescription = "Profile photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = developer.name.first().toString(),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = PrimaryGreen,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
 

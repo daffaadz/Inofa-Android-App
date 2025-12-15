@@ -20,31 +20,91 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.inofa_android_app.data.Category
+import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Developer
-import com.example.inofa_android_app.data.mockCategories
-import com.example.inofa_android_app.data.mockFeaturedDevelopers
+import com.example.inofa_android_app.data.Project
 import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.ui.theme.FontMedium
 import com.example.inofa_android_app.ui.theme.BackgroundLight
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inofa_android_app.ui.viewmodel.DeveloperUiState
+import com.example.inofa_android_app.ui.viewmodel.DeveloperViewModel
+import com.example.inofa_android_app.ui.viewmodel.ProjectViewModel
+import com.example.inofa_android_app.ui.viewmodel.ProjectUiState
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.inofa_android_app.data.UserRoleStorage
+import com.example.inofa_android_app.utils.ImageUtils
 
 @Composable
 fun DiscoverScreen(
     onDeveloperClick: (Int) -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProjects: () -> Unit = {},
+    onNavigateToPortfolio: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    viewModel: DeveloperViewModel = viewModel(),
+    projectViewModel: ProjectViewModel = viewModel()
 ) {
+    val isDeveloper = UserRoleStorage.isDeveloper()
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Semua") }
 
-    // Filter developers based on search query and category
-    val filteredDevelopers = remember(searchQuery, selectedCategory) {
-        mockFeaturedDevelopers.filter { developer ->
-            val matchesSearch = searchQuery.isEmpty() || 
+    val listState by viewModel.listState.collectAsStateWithLifecycle()
+    val projectState by projectViewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        if (isDeveloper) {
+            projectViewModel.loadAllProjects()
+        } else {
+            viewModel.loadDevelopers()
+        }
+    }
+
+    val developers: List<Developer> = when (val state = listState) {
+        is DeveloperUiState.Success -> state.developers
+        else -> emptyList()
+    }
+
+    val projects: List<Project> = when (val state = projectState) {
+        is ProjectUiState.Success -> state.projects
+        else -> emptyList()
+    }
+
+    val categories = if (isDeveloper) {
+        remember(projects) {
+            listOf("Semua") + projects
+                .flatMap { it.skillRequirements }
+                .distinct()
+                .sorted()
+        }
+    } else {
+        remember(developers) {
+            listOf("Semua") + developers
+                .flatMap { it.skills }
+                .distinct()
+                .sorted()
+        }
+    }
+
+    val filteredDevelopers = remember(searchQuery, selectedCategory, developers) {
+        developers.filter { developer ->
+            val matchesSearch = searchQuery.isEmpty() ||
                 developer.name.contains(searchQuery, ignoreCase = true)
-            val matchesCategory = selectedCategory == "Semua" || 
+            val matchesCategory = selectedCategory == "Semua" ||
                 developer.skills.any { it.contains(selectedCategory, ignoreCase = true) }
+            matchesSearch && matchesCategory
+        }
+    }
+
+    val filteredProjects = remember(searchQuery, selectedCategory, projects) {
+        projects.filter { project ->
+            val matchesSearch = searchQuery.isEmpty() ||
+                project.title.contains(searchQuery, ignoreCase = true) ||
+                (project.description?.contains(searchQuery, ignoreCase = true) == true)
+            val matchesCategory = selectedCategory == "Semua" ||
+                project.skillRequirements.any { it.contains(selectedCategory, ignoreCase = true) }
             matchesSearch && matchesCategory
         }
     }
@@ -67,29 +127,95 @@ fun DiscoverScreen(
 
             // Category Tabs
             CategoryTabs(
-                categories = listOf("Semua") + mockCategories.map { category -> category.name },
+                categories = categories,
                 selectedCategory = selectedCategory,
                 onCategorySelected = { selectedCategory = it }
             )
 
-            // Developer Count
-            Text(
-                text = "Menampilkan ${filteredDevelopers.size} dari ${mockFeaturedDevelopers.size} developer",
-                fontSize = 14.sp,
-                color = FontMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            // Count
+            if (isDeveloper) {
+                Text(
+                    text = "Menampilkan ${filteredProjects.size} dari ${projects.size} proyek",
+                    fontSize = 14.sp,
+                    color = FontMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            } else {
+                Text(
+                    text = "Menampilkan ${filteredDevelopers.size} dari ${developers.size} developer",
+                    fontSize = 14.sp,
+                    color = FontMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
 
-            // Developer List
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(filteredDevelopers) { developer ->
-                    DeveloperListItem(
-                        developer = developer,
-                        onClick = { onDeveloperClick(developer.id) }
-                    )
+            if (isDeveloper) {
+                when (projectState) {
+                    ProjectUiState.Loading, ProjectUiState.Idle -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Primary)
+                        }
+                    }
+                    is ProjectUiState.Error -> {
+                        Text(
+                            text = (projectState as ProjectUiState.Error).message,
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    is ProjectUiState.Success -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(filteredProjects) { project ->
+                                ProjectListItem(
+                                    project = project,
+                                    onClick = { /* TODO: Navigate to project detail */ }
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                when (listState) {
+                    DeveloperUiState.Loading, DeveloperUiState.Idle -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Primary)
+                        }
+                    }
+                    is DeveloperUiState.Error -> {
+                        Text(
+                            text = (listState as DeveloperUiState.Error).message,
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    is DeveloperUiState.Success -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(filteredDevelopers) { developer ->
+                                DeveloperListItem(
+                                    developer = developer,
+                                    onClick = { onDeveloperClick(developer.id) }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -98,6 +224,8 @@ fun DiscoverScreen(
         DiscoverBottomNavBar(
             onNavigateToHome = onNavigateToHome,
             onNavigateToMessages = onNavigateToMessages,
+            onNavigateToProjects = onNavigateToProjects,
+            onNavigateToPortfolio = onNavigateToPortfolio,
             onNavigateToProfile = onNavigateToProfile
         )
     }
@@ -194,6 +322,85 @@ fun CategoryTabs(
 }
 
 @Composable
+fun ProjectListItem(
+    project: Project,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Project Icon
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Primary.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Work,
+                    contentDescription = "Project",
+                    tint = Primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Project Info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = project.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = project.description ?: "Tidak ada deskripsi",
+                    fontSize = 14.sp,
+                    color = FontMedium,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AttachMoney,
+                        contentDescription = "Budget",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (project.budget != null) "Rp ${String.format("%,.0f", project.budget)}" else "Budget belum ditentukan",
+                        fontSize = 14.sp,
+                        color = FontMedium
+                    )
+                }
+                if (project.skillRequirements.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = project.skillRequirements.joinToString(", "),
+                        fontSize = 12.sp,
+                        color = Primary,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun DeveloperListItem(
     developer: Developer,
     onClick: () -> Unit
@@ -212,6 +419,7 @@ fun DeveloperListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar
+            val photoUrl = ImageUtils.toAbsoluteUrl(developer.photoUrl)
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -219,12 +427,21 @@ fun DeveloperListItem(
                     .background(Primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = developer.name.first().toString(),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary
-                )
+                if (photoUrl != null) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = "${developer.name}'s photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = developer.name.first().toString(),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -245,17 +462,16 @@ fun DeveloperListItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Rating",
-                        tint = Color(0xFFFCD34D),
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Location",
+                        tint = Color.Gray,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${developer.rating}",
+                        text = developer.location ?: "Unknown",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
+                        color = FontMedium
                     )
                 }
             }
@@ -267,8 +483,11 @@ fun DeveloperListItem(
 fun DiscoverBottomNavBar(
     onNavigateToHome: () -> Unit,
     onNavigateToMessages: () -> Unit,
+    onNavigateToProjects: () -> Unit,
+    onNavigateToPortfolio: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
+    val isClient = UserRoleStorage.isClient()
     NavigationBar(
         containerColor = Color.White,
         contentColor = Primary
@@ -299,19 +518,21 @@ fun DiscoverBottomNavBar(
                 indicatorColor = Color.White
             )
         )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
-            label = { Text("Messages") },
-            selected = false,
-            onClick = onNavigateToMessages,
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                selectedTextColor = Primary,
-                unselectedIconColor = FontMedium,
-                unselectedTextColor = FontMedium,
-                indicatorColor = Color.White
+        if (isClient) {
+            NavigationBarItem(
+                icon = { Icon(Icons.Default.Add, contentDescription = "Projects") },
+                label = { Text("Projects") },
+                selected = false,
+                onClick = onNavigateToProjects,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primary,
+                    selectedTextColor = Primary,
+                    unselectedIconColor = FontMedium,
+                    unselectedTextColor = FontMedium,
+                    indicatorColor = Color.White
+                )
             )
-        )
+        }
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") },

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Category
 import com.example.inofa_android_app.data.Developer
 import com.example.inofa_android_app.data.mockCategories
@@ -25,6 +26,8 @@ import com.example.inofa_android_app.data.mockFeaturedDevelopers
 import com.example.inofa_android_app.developer_profile.components.RatingBar
 import com.example.inofa_android_app.developer_profile.components.PrimaryGreen
 import com.example.inofa_android_app.developer_profile.components.LightGreenBackground
+import com.example.inofa_android_app.data.UserRoleStorage
+import com.example.inofa_android_app.utils.ImageUtils
 
 // --- Top Bar ---
 @Composable
@@ -239,15 +242,24 @@ fun HomeFeaturedDevelopersSection(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(developers) { developer ->
-                FeaturedDeveloperItem(
-                    developer = developer,
-                    onClick = { onDeveloperClick(developer.id) }
-                )
+        if (developers.isEmpty()) {
+            Text(
+                text = "Belum ada data developer",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        } else {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(developers) { developer ->
+                    FeaturedDeveloperItem(
+                        developer = developer,
+                        onClick = { onDeveloperClick(developer.id) }
+                    )
+                }
             }
         }
     }
@@ -264,20 +276,30 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // Avatar
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(LightGreenBackground),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = developer.name.first().toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = PrimaryGreen,
-                    fontWeight = FontWeight.Bold
+            // Avatar with photo
+            if (!developer.photoUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = ImageUtils.toAbsoluteUrl(developer.photoUrl),
+                    contentDescription = "Photo of ${developer.name}",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(LightGreenBackground),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = developer.name.first().toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PrimaryGreen,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -293,13 +315,17 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                RatingBar(rating = developer.rating)
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Location",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(16.dp)
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${developer.rating}",
+                    text = developer.location ?: "Unknown",
                     style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
+                    color = Color.Gray
                 )
             }
         }
@@ -311,39 +337,49 @@ fun FeaturedDeveloperItem(developer: Developer, onClick: () -> Unit) {
 fun HomeBottomNavBar(
     onNavigateToDiscover: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
+    onNavigateToProjects: () -> Unit = {},
+    onNavigateToPortfolio: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {}
 ) {
-    val items = listOf("Home", "Discover", "Messages", "Profile")
-    val icons = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.Email,
-        Icons.Default.Person
-    )
-    val selectedItem = "Home" // Mock selected item
+    val isClient = UserRoleStorage.isClient()
+    val selectedItem = "Home"
 
     NavigationBar(
         containerColor = Color.White,
         contentColor = PrimaryGreen
     ) {
-        items.forEachIndexed { index, item ->
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+            label = { Text("Home") },
+            selected = true,
+            onClick = { },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryGreen,
+                selectedTextColor = PrimaryGreen,
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray,
+                indicatorColor = Color.White
+            )
+        )
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Search, contentDescription = "Discover") },
+            label = { Text("Discover") },
+            selected = false,
+            onClick = onNavigateToDiscover,
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryGreen,
+                selectedTextColor = PrimaryGreen,
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray,
+                indicatorColor = Color.White
+            )
+        )
+        if (isClient) {
             NavigationBarItem(
-                icon = {
-                    Icon(
-                        icons[index],
-                        contentDescription = item
-                    )
-                },
-                label = { Text(item) },
-                selected = item == selectedItem,
-                onClick = {
-                    when (item) {
-                        "Discover" -> onNavigateToDiscover()
-                        "Messages" -> onNavigateToMessages()
-                        "Profile" -> onNavigateToProfile()
-                        else -> { /* Already on Home */ }
-                    }
-                },
+                icon = { Icon(Icons.Default.Add, contentDescription = "Projects") },
+                label = { Text("Projects") },
+                selected = false,
+                onClick = onNavigateToProjects,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = PrimaryGreen,
                     selectedTextColor = PrimaryGreen,
@@ -353,6 +389,19 @@ fun HomeBottomNavBar(
                 )
             )
         }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+            label = { Text("Profile") },
+            selected = false,
+            onClick = onNavigateToProfile,
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = PrimaryGreen,
+                selectedTextColor = PrimaryGreen,
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray,
+                indicatorColor = Color.White
+            )
+        )
     }
 }
 
