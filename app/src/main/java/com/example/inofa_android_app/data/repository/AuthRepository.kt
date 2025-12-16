@@ -16,12 +16,15 @@ class AuthRepository {
         val response = api.login(LoginRequest(email = email, password = password))
         response.data?.token?.let { TokenStorage.saveToken(it) }
         response.data?.user?.role?.let { UserRoleStorage.saveRole(it) }
+        response.data?.user?.email?.let { UserRoleStorage.saveEmail(it) }
         return response
     }
 
-    suspend fun register(email: String, password: String): AuthResponse {
-        val response = api.register(RegisterRequest(email = email, password = password))
+    suspend fun register(email: String, password: String, role: String? = null): AuthResponse {
+        val response = api.register(RegisterRequest(email = email, password = password, role = role))
         response.data?.token?.let { TokenStorage.saveToken(it) }
+        response.data?.user?.role?.let { UserRoleStorage.saveRole(it) }
+        response.data?.user?.email?.let { UserRoleStorage.saveEmail(it) }
         return response
     }
 

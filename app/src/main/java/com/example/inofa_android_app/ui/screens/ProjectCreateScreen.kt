@@ -44,23 +44,7 @@ fun ProjectCreateScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Buat Proyek Baru",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         containerColor = Color(0xFFF5F5F5)
     ) { padding ->
@@ -118,7 +102,9 @@ fun ProjectCreateScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -148,7 +134,9 @@ fun ProjectCreateScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp),
                                 maxLines = 5
@@ -179,7 +167,9 @@ fun ProjectCreateScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -208,7 +198,9 @@ fun ProjectCreateScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -243,7 +235,9 @@ fun ProjectCreateScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp),
                                 maxLines = 4
@@ -264,7 +258,7 @@ fun ProjectCreateScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 36.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (uiState is ProjectCreateUiState.Error) {
@@ -277,7 +271,9 @@ fun ProjectCreateScreen(
                     }
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Button(
@@ -295,8 +291,8 @@ fun ProjectCreateScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF00BFA5),
-                                disabledContainerColor = Color(0xFF00BFA5).copy(alpha = 0.5f)
+                                containerColor = Color(0xFF10B981),
+                                disabledContainerColor = Color(0xFF10B981).copy(alpha = 0.5f)
                             ),
                             enabled = title.isNotBlank() && skillsCsv.isNotBlank() && uiState !is ProjectCreateUiState.Loading,
                             shape = RoundedCornerShape(8.dp)

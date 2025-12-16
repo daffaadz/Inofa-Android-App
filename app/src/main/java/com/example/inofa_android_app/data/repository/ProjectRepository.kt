@@ -37,6 +37,19 @@ class ProjectRepository {
         }
     }
 
+    suspend fun getProjectById(id: Int): Result<ProjectDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getProjectById(id)
+            if (response.success && response.data != null) {
+                Result.success(response.data)
+            } else {
+                Result.failure(IllegalStateException(response.message ?: "Gagal memuat detail proyek"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun createProject(request: ProjectCreateRequest): Result<ProjectCreateResponse> = withContext(Dispatchers.IO) {
         try {
             val response = api.createProject(request)

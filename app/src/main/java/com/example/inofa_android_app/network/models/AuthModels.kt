@@ -9,7 +9,8 @@ data class LoginRequest(
 
 data class RegisterRequest(
     val email: String,
-    val password: String
+    val password: String,
+    val role: String? = null
 )
 
 data class SetRoleRequest(

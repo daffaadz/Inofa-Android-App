@@ -71,6 +71,8 @@ fun DeveloperProfileEditScreen(
     // Load initial profile data
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
+        // Load email from storage
+        email = UserRoleStorage.getEmail() ?: ""
     }
 
     // Handle profile state changes
@@ -117,28 +119,7 @@ fun DeveloperProfileEditScreen(
             )
         },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Edit Profile",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         }
     ) { padding ->
         Column(
@@ -232,7 +213,11 @@ fun DeveloperProfileEditScreen(
                     placeholder = { Text("Masukkan nama lengkap Anda", fontSize = 14.sp) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 // Email
@@ -249,7 +234,10 @@ fun DeveloperProfileEditScreen(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = false
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = Color.DarkGray
+                    )
                 )
 
                 // Password
@@ -274,7 +262,11 @@ fun DeveloperProfileEditScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 // Bio
@@ -290,7 +282,11 @@ fun DeveloperProfileEditScreen(
                     placeholder = { Text("Perkenalkan namaku Ying!", fontSize = 14.sp) },
                     minLines = 4,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 // Location
@@ -306,7 +302,11 @@ fun DeveloperProfileEditScreen(
                     placeholder = { Text("Yogyakarta", fontSize = 14.sp) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 // Skills
@@ -321,7 +321,11 @@ fun DeveloperProfileEditScreen(
                     onValueChange = { skillsText = it },
                     placeholder = { Text("kotlin, express.js, react.js", fontSize = 14.sp) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 // WhatsApp
@@ -337,7 +341,11 @@ fun DeveloperProfileEditScreen(
                     placeholder = { Text("628212345000", fontSize = 14.sp) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))

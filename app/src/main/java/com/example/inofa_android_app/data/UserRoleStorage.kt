@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 object UserRoleStorage {
     private const val PREF_NAME = "inofa_user"
     private const val KEY_ROLE = "role"
+    private const val KEY_EMAIL = "email"
     private lateinit var prefs: SharedPreferences
 
     fun init(context: Context) {
@@ -24,12 +25,22 @@ object UserRoleStorage {
         return prefs.getString(KEY_ROLE, null)
     }
 
+    fun saveEmail(email: String?) {
+        if (!::prefs.isInitialized) return
+        prefs.edit().putString(KEY_EMAIL, email).apply()
+    }
+
+    fun getEmail(): String? {
+        if (!::prefs.isInitialized) return null
+        return prefs.getString(KEY_EMAIL, null)
+    }
+
     fun isClient(): Boolean = getRole() == "client"
 
     fun isDeveloper(): Boolean = getRole() == "developer"
 
     fun clear() {
         if (!::prefs.isInitialized) return
-        prefs.edit().remove(KEY_ROLE).apply()
+        prefs.edit().remove(KEY_ROLE).remove(KEY_EMAIL).apply()
     }
 }

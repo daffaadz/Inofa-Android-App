@@ -29,7 +29,7 @@ android {
     }
     buildTypes.forEach {
         // Using IP directly; update when Wi-Fi changes
-        it.buildConfigField("String", "API_BASE_URL", "\"http://192.168.18.59:4000/\"")
+        it.buildConfigField("String", "API_BASE_URL", "\"http://192.168.100.14:4000/\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

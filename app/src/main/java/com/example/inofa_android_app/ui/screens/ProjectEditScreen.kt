@@ -81,23 +81,7 @@ fun ProjectEditScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Edit Proyek",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         containerColor = Color(0xFFF5F5F5)
     ) { padding ->
@@ -204,7 +188,9 @@ fun ProjectEditScreen(
                                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                                 focusedContainerColor = Color(0xFFFAFAFA),
                                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                                focusedBorderColor = Primary
+                                                focusedBorderColor = Primary,
+                                                unfocusedTextColor = Color(0xFF212121),
+                                                focusedTextColor = Color(0xFF212121)
                                             ),
                                             shape = RoundedCornerShape(8.dp)
                                         )
@@ -234,7 +220,9 @@ fun ProjectEditScreen(
                                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                                 focusedContainerColor = Color(0xFFFAFAFA),
                                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                                focusedBorderColor = Primary
+                                                focusedBorderColor = Primary,
+                                                unfocusedTextColor = Color(0xFF212121),
+                                                focusedTextColor = Color(0xFF212121)
                                             ),
                                             shape = RoundedCornerShape(8.dp),
                                             maxLines = 5
@@ -265,7 +253,9 @@ fun ProjectEditScreen(
                                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                                 focusedContainerColor = Color(0xFFFAFAFA),
                                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                                focusedBorderColor = Primary
+                                                focusedBorderColor = Primary,
+                                                unfocusedTextColor = Color(0xFF212121),
+                                                focusedTextColor = Color(0xFF212121)
                                             ),
                                             shape = RoundedCornerShape(8.dp)
                                         )
@@ -294,7 +284,9 @@ fun ProjectEditScreen(
                                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                                 focusedContainerColor = Color(0xFFFAFAFA),
                                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                                focusedBorderColor = Primary
+                                                focusedBorderColor = Primary,
+                                                unfocusedTextColor = Color(0xFF212121),
+                                                focusedTextColor = Color(0xFF212121)
                                             ),
                                             shape = RoundedCornerShape(8.dp)
                                         )
@@ -329,7 +321,9 @@ fun ProjectEditScreen(
                                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                                 focusedContainerColor = Color(0xFFFAFAFA),
                                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                                focusedBorderColor = Primary
+                                                focusedBorderColor = Primary,
+                                                unfocusedTextColor = Color(0xFF212121),
+                                                focusedTextColor = Color(0xFF212121)
                                             ),
                                             shape = RoundedCornerShape(8.dp),
                                             maxLines = 4
@@ -350,7 +344,7 @@ fun ProjectEditScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
+                                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 36.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (errorMessage != null) {
@@ -363,7 +357,9 @@ fun ProjectEditScreen(
                                 }
 
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 16.dp),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
                                     Button(

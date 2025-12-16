@@ -73,43 +73,7 @@ fun PortfolioManageScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Kelola Portfolio",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Handle notification */ }) {
-                        BadgedBox(
-                            badge = {
-                                Badge(
-                                    containerColor = Color.Red,
-                                    modifier = Modifier.size(8.dp)
-                                )
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Notifications"
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         containerColor = Color.White
     ) { padding ->

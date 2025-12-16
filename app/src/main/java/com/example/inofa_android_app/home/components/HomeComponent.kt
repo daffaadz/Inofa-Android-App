@@ -33,25 +33,31 @@ import com.example.inofa_android_app.utils.ImageUtils
 // --- Top Bar ---
 @Composable
 fun HomeTopBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        shadowElevation = 2.dp
     ) {
-        Text(
-            text = "Inofa",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = PrimaryGreen
-        )
-        IconButton(onClick = { /* TODO: Handle notification click */ }) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications",
-                tint = Color.Black
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Inofa",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryGreen
             )
+            IconButton(onClick = { /* TODO: Handle notification click */ }) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications",
+                    tint = Color.Black
+                )
+            }
         }
     }
 }
@@ -345,10 +351,10 @@ fun HomeBottomNavBar(
     onNavigateToMessages: () -> Unit = {},
     onNavigateToProjects: () -> Unit = {},
     onNavigateToPortfolio: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    selectedTab: String = "Home"
 ) {
     val isClient = UserRoleStorage.isClient()
-    val selectedItem = "Home"
 
     NavigationBar(
         containerColor = Color.White,
@@ -357,7 +363,7 @@ fun HomeBottomNavBar(
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") },
-            selected = true,
+            selected = selectedTab == "Home",
             onClick = { },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = PrimaryGreen,
@@ -370,7 +376,7 @@ fun HomeBottomNavBar(
         NavigationBarItem(
             icon = { Icon(Icons.Default.Search, contentDescription = "Discover") },
             label = { Text("Discover") },
-            selected = false,
+            selected = selectedTab == "Discover",
             onClick = onNavigateToDiscover,
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = PrimaryGreen,
@@ -384,7 +390,7 @@ fun HomeBottomNavBar(
             NavigationBarItem(
                 icon = { Icon(Icons.Default.Add, contentDescription = "Projects") },
                 label = { Text("Projects") },
-                selected = false,
+                selected = selectedTab == "Projects",
                 onClick = onNavigateToProjects,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = PrimaryGreen,
@@ -398,7 +404,7 @@ fun HomeBottomNavBar(
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") },
-            selected = false,
+            selected = selectedTab == "Profile",
             onClick = onNavigateToProfile,
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = PrimaryGreen,
@@ -447,12 +453,15 @@ fun HomeCategoryTabs(
 
 // --- Project Card for Developer Homepage ---
 @Composable
-fun HomeProjectCard(project: Project) {
+fun HomeProjectCard(
+    project: Project,
+    onClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable { /* TODO: Navigate to project detail */ },
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

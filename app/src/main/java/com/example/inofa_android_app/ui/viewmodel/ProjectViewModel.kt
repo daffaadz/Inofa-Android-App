@@ -16,6 +16,13 @@ sealed interface ProjectUiState {
     data class Error(val message: String) : ProjectUiState
 }
 
+sealed interface ProjectDetailState {
+    object Idle : ProjectDetailState
+    object Loading : ProjectDetailState
+    data class Success(val project: com.example.inofa_android_app.network.models.ProjectDto) : ProjectDetailState
+    data class Error(val message: String) : ProjectDetailState
+}
+
 sealed interface ProjectActionState {
     object Idle : ProjectActionState
     object Loading : ProjectActionState
@@ -30,8 +37,22 @@ class ProjectViewModel(
     private val _uiState = MutableStateFlow<ProjectUiState>(ProjectUiState.Idle)
     val uiState: StateFlow<ProjectUiState> = _uiState
 
+    private val _detailState = MutableStateFlow<ProjectDetailState>(ProjectDetailState.Idle)
+    val detailState: StateFlow<ProjectDetailState> = _detailState
+
     private val _actionState = MutableStateFlow<ProjectActionState>(ProjectActionState.Idle)
     val actionState: StateFlow<ProjectActionState> = _actionState
+
+    fun loadProjectById(id: Int) {
+        _detailState.value = ProjectDetailState.Loading
+        viewModelScope.launch {
+            val result = repository.getProjectById(id)
+            _detailState.value = result.fold(
+                onSuccess = { ProjectDetailState.Success(it) },
+                onFailure = { ProjectDetailState.Error(it.message ?: "Gagal memuat detail proyek") }
+            )
+        }
+    }
 
     fun loadMyProjects() {
         _uiState.value = ProjectUiState.Loading

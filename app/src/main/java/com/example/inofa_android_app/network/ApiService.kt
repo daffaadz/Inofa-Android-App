@@ -61,6 +61,9 @@ interface ApiService {
     @GET("project/all")
     suspend fun getAllProjects(): ProjectListResponse
 
+    @GET("project/{id}")
+    suspend fun getProjectById(@Path("id") id: Int): com.example.inofa_android_app.network.models.ProjectDetailResponse
+
     @POST("project")
     suspend fun createProject(@Body body: ProjectCreateRequest): ProjectCreateResponse
 

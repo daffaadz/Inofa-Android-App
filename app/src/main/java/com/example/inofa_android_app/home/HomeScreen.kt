@@ -41,6 +41,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.text.font.FontWeight
 import com.example.inofa_android_app.ui.viewmodel.ProfileViewModel
 import com.example.inofa_android_app.ui.viewmodel.ProfileDataState
@@ -48,6 +49,7 @@ import com.example.inofa_android_app.ui.viewmodel.ProfileDataState
 @Composable
 fun HomeScreen(
     onDeveloperClick: (Int) -> Unit = {},
+    onProjectClick: (Int) -> Unit = {},
     onNavigateToDiscover: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
     onNavigateToProjects: () -> Unit = {},
@@ -129,28 +131,37 @@ fun HomeScreen(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.White)) {
-        // Content area with scrolling
+    Scaffold(
+        topBar = {
+            HomeTopBar()
+        },
+        bottomBar = {
+            HomeBottomNavBar(
+                onNavigateToDiscover = onNavigateToDiscover,
+                onNavigateToMessages = onNavigateToMessages,
+                onNavigateToProjects = if (isDeveloper) onNavigateToPortfolio else onNavigateToProjects,
+                onNavigateToProfile = onNavigateToProfile,
+                selectedTab = "Home"
+            )
+        },
+        containerColor = Color.White
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Top Bar (App Name and Notification Icon)
-            HomeTopBar()
-
-            // 2. Discover Section (Welcome Message)
+            // 1. Discover Section (Welcome Message)
             HomeDiscoverSection(userName = userName)
 
-            // 3. Search Bar
+            // 2. Search Bar
             HomeSearchBar(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it }
             )
 
-            // 4. Category Filter (khusus developer)
+            // 3. Category Filter (khusus developer)
             if (isDeveloper) {
                 HomeCategoryTabs(
                     categories = categories,
@@ -168,7 +179,10 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 filteredProjects.forEach { project ->
-                    HomeProjectCard(project = project)
+                    HomeProjectCard(
+                        project = project,
+                        onClick = { onProjectClick(project.id) }
+                    )
                 }
             } else {
                 // Show categories for client
@@ -201,47 +215,6 @@ fun HomeScreen(
                     onDeveloperClick = onDeveloperClick
                 )
             }
-        }
-
-        // 6. Bottom Navigation Bar
-        HomeBottomNavBar(
-            onNavigateToDiscover = onNavigateToDiscover,
-            onNavigateToMessages = onNavigateToMessages,
-            onNavigateToProjects = onNavigateToProjects,
-            onNavigateToPortfolio = onNavigateToPortfolio,
-            onNavigateToProfile = onNavigateToProfile
-        )
-    }
-}
-
-@Composable
-fun HomeProjectCard(project: Project) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = project.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = project.description ?: "Deskripsi belum tersedia",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Budget: Rp ${project.budget}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }

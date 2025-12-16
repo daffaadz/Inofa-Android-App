@@ -65,30 +65,7 @@ fun ClientProfileViewScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Inofa",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00BFA5)
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Handle notification */ }) {
-                        Badge {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                tint = Color.Black
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         bottomBar = {
             NavigationBar(
@@ -223,15 +200,18 @@ fun ClientProfileViewScreen(
                         Button(
                             onClick = onEditProfile,
                             modifier = Modifier
-                                .fillMaxWidth(0.5f)
+                                .fillMaxWidth(0.75f)
                                 .height(40.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF00BFA5)
+                                containerColor = Color(0xFF10B981)
                             ),
                             shape = RoundedCornerShape(8.dp),
                             enabled = true
                         ) {
-                            Text("Edit Profile")
+                            Text(
+                                text = "Edit Profile",
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -239,6 +219,7 @@ fun ClientProfileViewScreen(
 
             // Stats Cards
             val doneProjects = projects.filter { it.status?.lowercase() == "done" }
+            val activeProjects = projects.filter { it.status?.lowercase() == "accepted" }
             item {
                 Row(
                     modifier = Modifier
@@ -275,7 +256,7 @@ fun ClientProfileViewScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "${projects.size}",
+                                    text = "${activeProjects.size}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black

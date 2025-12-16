@@ -128,26 +128,7 @@ fun PortfolioAddScreen(
             )
         },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (isEditMode) "Edit Portfolio" else "Tambah Portfolio Baru",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         containerColor = Color(0xFFF5F5F5)
     ) { paddingValues ->
@@ -280,7 +261,9 @@ fun PortfolioAddScreen(
                                 unfocusedContainerColor = Color(0xFFFAFAFA),
                                 focusedContainerColor = Color(0xFFFAFAFA),
                                 unfocusedBorderColor = Color(0xFFE0E0E0),
-                                focusedBorderColor = Color(0xFF00BFA5)
+                                focusedBorderColor = Color(0xFF00BFA5),
+                                unfocusedTextColor = Color(0xFF212121),
+                                focusedTextColor = Color(0xFF212121)
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
@@ -331,7 +314,9 @@ fun PortfolioAddScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -361,7 +346,9 @@ fun PortfolioAddScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp),
                                 maxLines = 5
@@ -391,7 +378,9 @@ fun PortfolioAddScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -420,7 +409,9 @@ fun PortfolioAddScreen(
                                     unfocusedContainerColor = Color(0xFFFAFAFA),
                                     focusedContainerColor = Color(0xFFFAFAFA),
                                     unfocusedBorderColor = Color(0xFFE0E0E0),
-                                    focusedBorderColor = Color(0xFF00BFA5)
+                                    focusedBorderColor = Color(0xFF00BFA5),
+                                    unfocusedTextColor = Color(0xFF212121),
+                                    focusedTextColor = Color(0xFF212121)
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -440,7 +431,7 @@ fun PortfolioAddScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 36.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
@@ -467,8 +458,8 @@ fun PortfolioAddScreen(
                             .weight(1f)
                             .height(48.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF00BFA5),
-                            disabledContainerColor = Color(0xFF00BFA5).copy(alpha = 0.5f)
+                            containerColor = Color(0xFF10B981),
+                            disabledContainerColor = Color(0xFF10B981).copy(alpha = 0.5f)
                         ),
                         enabled = title.isNotBlank() && uiState !is PortfolioAddUiState.Loading && uiState !is PortfolioAddUiState.UploadingImage,
                         shape = RoundedCornerShape(8.dp)
@@ -481,7 +472,7 @@ fun PortfolioAddScreen(
                             )
                         } else {
                             Text(
-                                if (isEditMode) "Simpan Perubahan" else "Simpan Portfolio",
+                                if (isEditMode) "Simpan" else "Simpan",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold
                             )

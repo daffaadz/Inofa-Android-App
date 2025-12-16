@@ -65,10 +65,8 @@ class AuthViewModel(
         _uiState.value = AuthUiState(isLoading = true)
         viewModelScope.launch {
             try {
-                val response = repository.register(email, password)
+                val response = repository.register(email, password, role)
                 if (response.success && response.data?.token != null) {
-                    // Set role immediately after register
-                    repository.setRole(role)
                     val next = resolveNextStep()
                     _uiState.value = AuthUiState(isLoading = false, token = response.data.token, nextStep = next)
                 } else {

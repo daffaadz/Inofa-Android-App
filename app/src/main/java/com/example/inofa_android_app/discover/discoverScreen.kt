@@ -39,6 +39,7 @@ import com.example.inofa_android_app.utils.ImageUtils
 @Composable
 fun DiscoverScreen(
     onDeveloperClick: (Int) -> Unit = {},
+    onProjectClick: (Int) -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
     onNavigateToProjects: () -> Unit = {},
@@ -109,15 +110,27 @@ fun DiscoverScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Content
+    Scaffold(
+        topBar = {
+            com.example.inofa_android_app.home.components.HomeTopBar()
+        },
+        bottomBar = {
+            DiscoverBottomNavBar(
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToMessages = onNavigateToMessages,
+                onNavigateToProjects = onNavigateToProjects,
+                onNavigateToPortfolio = onNavigateToPortfolio,
+                onNavigateToProfile = onNavigateToProfile
+            )
+        },
+        containerColor = BackgroundLight
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(paddingValues)
                 .background(BackgroundLight)
         ) {
-            // Top Bar
-            DiscoverTopBar()
 
             // Search Bar
             DiscoverSearchBar(
@@ -177,7 +190,7 @@ fun DiscoverScreen(
                             items(filteredProjects) { project ->
                                 ProjectListItem(
                                     project = project,
-                                    onClick = { /* TODO: Navigate to project detail */ }
+                                    onClick = { onProjectClick(project.id) }
                                 )
                             }
                         }
@@ -219,15 +232,6 @@ fun DiscoverScreen(
                 }
             }
         }
-
-        // Bottom Navigation
-        DiscoverBottomNavBar(
-            onNavigateToHome = onNavigateToHome,
-            onNavigateToMessages = onNavigateToMessages,
-            onNavigateToProjects = onNavigateToProjects,
-            onNavigateToPortfolio = onNavigateToPortfolio,
-            onNavigateToProfile = onNavigateToProfile
-        )
     }
 }
 

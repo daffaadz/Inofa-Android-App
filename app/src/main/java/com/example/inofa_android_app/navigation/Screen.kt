@@ -8,6 +8,7 @@ sealed class Screen(val route: String) {
     data object Messages : Screen("messages")
     data object Profile : Screen("profile")
     data object ProfileSetup : Screen("profile_setup")
+    data object ClientProfileSetup : Screen("client_profile_setup")
     data object ProjectCreate : Screen("project_create")
     data object PortfolioManage : Screen("portfolio_manage")
     data object PortfolioAdd : Screen("portfolio_add")
@@ -24,5 +25,8 @@ sealed class Screen(val route: String) {
     }
     data object ProjectEdit : Screen("project_edit/{projectId}") {
         fun createRoute(projectId: Int) = "project_edit/$projectId"
+    }
+    data object ProjectView : Screen("project_view/{projectId}") {
+        fun createRoute(projectId: Int) = "project_view/$projectId"
     }
 }

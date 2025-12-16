@@ -73,27 +73,7 @@ fun DeveloperProfileViewScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Inofa",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Primary
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Notifications */ }) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notifications"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         },
         bottomBar = {
             NavigationBar(
@@ -250,7 +230,7 @@ fun DeveloperProfileViewScreen(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "15",
+                                    text = "-",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Primary
@@ -271,7 +251,7 @@ fun DeveloperProfileViewScreen(
 
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    text = "2",
+                                    text = "-",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Primary
@@ -294,7 +274,10 @@ fun DeveloperProfileViewScreen(
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Edit Profil")
+                            Text(
+                                text = "Edit Profil",
+                                color = Color.White
+                            )
                         }
                     }
                 }

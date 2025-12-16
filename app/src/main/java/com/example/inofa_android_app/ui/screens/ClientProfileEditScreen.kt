@@ -67,6 +67,8 @@ fun ClientProfileEditScreen(
     // Load initial profile data
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
+        // Load email from storage
+        email = UserRoleStorage.getEmail() ?: ""
     }
 
     // Handle profile state changes
@@ -77,7 +79,6 @@ fun ClientProfileEditScreen(
                     // Initial load - populate fields
                     val profile = state.profile
                     name = profile.name
-                    email = profile.name // TODO: Get actual email
                     phone = profile.whatsapp ?: ""
                     company = profile.location ?: ""
                     hasLoadedInitialData = true
@@ -112,28 +113,7 @@ fun ClientProfileEditScreen(
             )
         },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Edit Profile",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO: Notifications */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+            com.example.inofa_android_app.home.components.HomeTopBar()
         }
     ) { padding ->
         Column(
@@ -230,7 +210,9 @@ fun ClientProfileEditScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF00BFA5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     )
                 )
 
@@ -251,7 +233,7 @@ fun ClientProfileEditScreen(
                     enabled = false,
                     colors = OutlinedTextFieldDefaults.colors(
                         disabledBorderColor = Color(0xFFE0E0E0),
-                        disabledTextColor = Color.Gray
+                        disabledTextColor = Color.DarkGray
                     )
                 )
 
@@ -280,7 +262,9 @@ fun ClientProfileEditScreen(
                     },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF00BFA5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     )
                 )
 
@@ -306,7 +290,9 @@ fun ClientProfileEditScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF00BFA5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     )
                 )
 
@@ -326,7 +312,9 @@ fun ClientProfileEditScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFF00BFA5),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     )
                 )
 

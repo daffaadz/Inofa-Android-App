@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.inofa_android_app.auth.SignInScreen
 import com.example.inofa_android_app.auth.SignUpScreen
 import com.example.inofa_android_app.ui.screens.ProfileSetupScreen
+import com.example.inofa_android_app.ui.screens.ClientProfileSetupScreen
 import com.example.inofa_android_app.ui.screens.ProjectCreateScreen
 import com.example.inofa_android_app.ui.screens.PortfolioManageScreen
 import com.example.inofa_android_app.ui.screens.PortfolioAddScreen
@@ -18,6 +19,7 @@ import com.example.inofa_android_app.ui.screens.ClientProfileViewScreen
 import com.example.inofa_android_app.ui.screens.ClientProfileEditScreen
 import com.example.inofa_android_app.ui.screens.ProjectDetailScreen
 import com.example.inofa_android_app.ui.screens.ProjectEditScreen
+import com.example.inofa_android_app.ui.screens.ProjectViewScreen
 import com.example.inofa_android_app.developer_profile.DeveloperProfileScreen
 import com.example.inofa_android_app.discover.DiscoverScreen
 import com.example.inofa_android_app.home.HomeScreen
@@ -44,7 +46,9 @@ fun AppNavHost(
                     }
                 },
                 onNavigateProfileSetup = {
-                    navController.navigate(Screen.ProfileSetup.route) {
+                    val isDeveloper = com.example.inofa_android_app.data.UserRoleStorage.isDeveloper()
+                    val route = if (isDeveloper) Screen.ProfileSetup.route else Screen.ClientProfileSetup.route
+                    navController.navigate(route) {
                         popUpTo(Screen.SignIn.route) { inclusive = true }
                     }
                 },
@@ -67,7 +71,9 @@ fun AppNavHost(
                     }
                 },
                 onNavigateProfileSetup = {
-                    navController.navigate(Screen.ProfileSetup.route) {
+                    val isDeveloper = com.example.inofa_android_app.data.UserRoleStorage.isDeveloper()
+                    val route = if (isDeveloper) Screen.ProfileSetup.route else Screen.ClientProfileSetup.route
+                    navController.navigate(route) {
                         popUpTo(Screen.SignIn.route) { inclusive = true }
                     }
                 },
@@ -90,11 +96,24 @@ fun AppNavHost(
             )
         }
 
+        composable(Screen.ClientProfileSetup.route) {
+            ClientProfileSetupScreen(
+                onDone = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.ClientProfileSetup.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // Main Screens
         composable(Screen.Home.route) {
             HomeScreen(
                 onDeveloperClick = { developerId ->
                     navController.navigate(Screen.DeveloperProfile.createRoute(developerId))
+                },
+                onProjectClick = { projectId ->
+                    navController.navigate(Screen.ProjectView.createRoute(projectId))
                 },
                 onNavigateToDiscover = {
                     navController.navigate(Screen.Discover.route)
@@ -118,6 +137,9 @@ fun AppNavHost(
             DiscoverScreen(
                 onDeveloperClick = { developerId ->
                     navController.navigate(Screen.DeveloperProfile.createRoute(developerId))
+                },
+                onProjectClick = { projectId ->
+                    navController.navigate(Screen.ProjectView.createRoute(projectId))
                 },
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
@@ -279,6 +301,14 @@ fun AppNavHost(
                 projectId = projectId,
                 onBackClick = { navController.popBackStack() },
                 onSuccess = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ProjectView.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")?.toIntOrNull() ?: 0
+            ProjectViewScreen(
+                projectId = projectId,
+                onBackClick = { navController.popBackStack() }
             )
         }
 

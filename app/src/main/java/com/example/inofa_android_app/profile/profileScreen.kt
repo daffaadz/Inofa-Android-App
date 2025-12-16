@@ -67,17 +67,27 @@ fun ProfileScreen(
         }
     } else emptyList()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Content
+    Scaffold(
+        topBar = {
+            com.example.inofa_android_app.home.components.HomeTopBar()
+        },
+        bottomBar = {
+            com.example.inofa_android_app.home.components.HomeBottomNavBar(
+                onNavigateToDiscover = onNavigateToDiscover,
+                onNavigateToMessages = onNavigateToMessages,
+                onNavigateToProjects = if (isDeveloper) onNavigateToPortfolio else onNavigateToProjects,
+                onNavigateToProfile = { },
+                selectedTab = "Profile"
+            )
+        },
+        containerColor = BackgroundLight
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(paddingValues)
                 .background(BackgroundLight)
         ) {
-            // Top Bar
-            item {
-                ProfileTopBar()
-            }
 
             // Welcome Section
             item {

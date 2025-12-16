@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext (HTTP) only to your LAN backend. Update the IP if it changes. -->
-    <domain-config cleartextTrafficPermitted="true">
-        <!-- Stable host name; map inofa.local to your backend IP via hosts/DNS -->
-        <domain includeSubdomains="false">inofa.local</domain>
-        <!-- Keep emulator loopback -->
-        <domain includeSubdomains="false">10.0.2.2</domain>
-        <!-- Optional: legacy IPs you still use; keep if needed -->
-        <domain includeSubdomains="false">192.168.18.7</domain>
-        <domain includeSubdomains="false">192.168.100.232</domain>
-        <domain includeSubdomains="false">192.168.18.59</domain>
-        <domain includeSubdomains="false">10.42.223.94</domain>
-        <domain includeSubdomains="false">10.33.87.179</domain>
-        <domain includeSubdomains="false">10.33.214.204</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>
