@@ -21,6 +21,7 @@ import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -62,6 +63,15 @@ interface ApiService {
 
     @POST("project")
     suspend fun createProject(@Body body: ProjectCreateRequest): ProjectCreateResponse
+
+    @PUT("project/{id}")
+    suspend fun updateProject(@Path("id") id: Int, @Body body: ProjectCreateRequest): ProjectCreateResponse
+
+    @PATCH("project/{id}/status")
+    suspend fun updateProjectStatus(@Path("id") id: Int, @Body body: Map<String, String>): ProjectCreateResponse
+
+    @DELETE("project/{id}")
+    suspend fun deleteProject(@Path("id") id: Int): ProjectCreateResponse
 
     @POST("portfolio")
     suspend fun createPortfolio(@Body body: PortfolioCreateRequest): PortfolioCreateResponse

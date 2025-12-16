@@ -35,6 +35,9 @@ import com.example.inofa_android_app.ui.viewmodel.ProfileDataState
 import com.example.inofa_android_app.ui.theme.Primary
 import com.example.inofa_android_app.data.TokenStorage
 import com.example.inofa_android_app.data.UserRoleStorage
+import com.example.inofa_android_app.ui.components.CustomSnackbarHost
+import com.example.inofa_android_app.ui.components.ToastType
+import com.example.inofa_android_app.ui.components.showCustomToast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,23 +65,57 @@ fun DeveloperProfileEditScreen(
     var skillsText by remember { mutableStateOf("") }
     var whatsapp by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var hasLoadedInitialData by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(profileState) {
-        if (profileState is ProfileDataState.Success) {
-            val profile = (profileState as ProfileDataState.Success).profile
-            name = profile.name
-            bio = profile.bio ?: ""
-            location = profile.location ?: ""
-            skillsText = profile.skills.joinToString(", ")
-            whatsapp = profile.whatsapp ?: ""
-        }
-    }
-
+    // Load initial profile data
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
     }
 
+    // Handle profile state changes
+    LaunchedEffect(profileState) {
+        when (val state = profileState) {
+            is ProfileDataState.Success -> {
+                if (!hasLoadedInitialData) {
+                    // Initial load - populate fields
+                    val profile = state.profile
+                    name = profile.name
+                    bio = profile.bio ?: ""
+                    location = profile.location ?: ""
+                    skillsText = profile.skills.joinToString(", ")
+                    whatsapp = profile.whatsapp ?: ""
+                    hasLoadedInitialData = true
+                } else {
+                    // Update successful - show message and navigate back
+                    snackbarHostState.showCustomToast(
+                        "Profile berhasil diperbarui!",
+                        ToastType.SUCCESS
+                    )
+                    kotlinx.coroutines.delay(150)
+                    onSuccess()
+                }
+            }
+            is ProfileDataState.Error -> {
+                if (hasLoadedInitialData) {
+                    // Only show error for update, not initial load
+                    snackbarHostState.showCustomToast(
+                        state.message,
+                        ToastType.ERROR
+                    )
+                }
+            }
+            else -> {}
+        }
+    }
+
     Scaffold(
+        snackbarHost = { 
+            CustomSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -325,16 +362,29 @@ fun DeveloperProfileEditScreen(
                             skills = skillsList,
                             whatsapp = whatsapp.ifBlank { null }
                         )
-                        onSuccess()
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary
                     ),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = name.isNotBlank()
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = name.isNotBlank() && skillsText.isNotBlank() && profileState !is ProfileDataState.Loading
                 ) {
-                    Text("Simpan", modifier = Modifier.padding(vertical = 8.dp))
+                    if (profileState is ProfileDataState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            "Simpan",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))

@@ -16,6 +16,8 @@ import com.example.inofa_android_app.ui.screens.DeveloperProfileViewScreen
 import com.example.inofa_android_app.ui.screens.DeveloperProfileEditScreen
 import com.example.inofa_android_app.ui.screens.ClientProfileViewScreen
 import com.example.inofa_android_app.ui.screens.ClientProfileEditScreen
+import com.example.inofa_android_app.ui.screens.ProjectDetailScreen
+import com.example.inofa_android_app.ui.screens.ProjectEditScreen
 import com.example.inofa_android_app.developer_profile.DeveloperProfileScreen
 import com.example.inofa_android_app.discover.DiscoverScreen
 import com.example.inofa_android_app.home.HomeScreen
@@ -181,6 +183,9 @@ fun AppNavHost(
                     onEditProfile = {
                         navController.navigate(Screen.ClientProfileEdit.route)
                     },
+                    onNavigateToProjectDetail = { projectId ->
+                        navController.navigate(Screen.ProjectDetail.createRoute(projectId))
+                    },
                     onLogout = {
                         navController.navigate(Screen.SignIn.route) {
                             popUpTo(0) { inclusive = true }
@@ -254,6 +259,26 @@ fun AppNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable(Screen.ProjectDetail.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")?.toIntOrNull() ?: 0
+            ProjectDetailScreen(
+                projectId = projectId,
+                onBackClick = { navController.popBackStack() },
+                onEditProject = { id ->
+                    navController.navigate(Screen.ProjectEdit.createRoute(id))
+                }
+            )
+        }
+
+        composable(Screen.ProjectEdit.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments?.getString("projectId")?.toIntOrNull() ?: 0
+            ProjectEditScreen(
+                projectId = projectId,
+                onBackClick = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() }
             )
         }
 

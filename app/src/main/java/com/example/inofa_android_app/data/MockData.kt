@@ -63,6 +63,7 @@ data class Project(
     val budget: Double?,
     val skillRequirements: List<String>,
     val constraints: String?,
+    val status: String?,
     val createdAt: String,
     val updatedAt: String
 )
@@ -235,6 +236,7 @@ val mockProjects = listOf(
         budget = 15000000.0,
         skillRequirements = listOf("React", "Next.js", "Tailwind CSS"),
         constraints = "Deadline 1 bulan, harus SEO-friendly",
+        status = "pending",
         createdAt = "2024-12-01T10:00:00Z",
         updatedAt = "2024-12-01T10:00:00Z"
     ),
@@ -246,6 +248,7 @@ val mockProjects = listOf(
         budget = 50000000.0,
         skillRequirements = listOf("Flutter", "Firebase", "REST API"),
         constraints = "Support Android dan iOS, Integrasi dengan Midtrans",
+        status = "accepted",
         createdAt = "2024-12-02T14:30:00Z",
         updatedAt = "2024-12-02T14:30:00Z"
     ),
@@ -257,6 +260,7 @@ val mockProjects = listOf(
         budget = 25000000.0,
         skillRequirements = listOf("React", "Node.js", "PostgreSQL", "Chart.js"),
         constraints = "Real-time data update, Export ke PDF dan Excel",
+        status = "done",
         createdAt = "2024-11-28T09:15:00Z",
         updatedAt = "2024-11-28T09:15:00Z"
     ),
@@ -268,6 +272,7 @@ val mockProjects = listOf(
         budget = 20000000.0,
         skillRequirements = listOf("Node.js", "Express", "MongoDB", "JWT"),
         constraints = "Dokumentasi API lengkap, Unit testing coverage min 80%",
+        status = "rejected",
         createdAt = "2024-11-25T16:45:00Z",
         updatedAt = "2024-11-25T16:45:00Z"
     )

@@ -1,5 +1,7 @@
 package com.example.inofa_android_app.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,6 +54,7 @@ fun DeveloperProfileViewScreen(
 ) {
     val profileState by profileViewModel.profileState.collectAsStateWithLifecycle()
     val portfolioState by portfolioViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
@@ -442,7 +446,13 @@ fun DeveloperProfileViewScreen(
                                     ) {
                                         rowItems.forEach { item ->
                                             Card(
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clickable {
+                                                        item.link?.let { url ->
+                                                            openUrl(context, url)
+                                                        }
+                                                    },
                                                 shape = RoundedCornerShape(12.dp),
                                                 colors = CardDefaults.cardColors(
                                                     containerColor = Color(0xFFF5F5F5)
@@ -591,6 +601,20 @@ fun LogoutButtonDeveloper(onLogout: () -> Unit) {
                 tint = Color.Gray
             )
         }
+    }
+}
+
+private fun openUrl(context: android.content.Context, url: String) {
+    try {
+        val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            "https://$url"
+        } else {
+            url
+        }
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(formattedUrl))
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 

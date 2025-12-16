@@ -128,15 +128,13 @@ class ProfileViewModel(
         whatsapp: String?
     ) {
         if (name.isBlank()) {
-            _uiState.value = ProfileUiState.Error("Nama wajib diisi")
+            _profileState.value = ProfileDataState.Error("Nama wajib diisi")
             return
         }
-        if (skills.isEmpty()) {
-            _uiState.value = ProfileUiState.Error("Isi minimal satu skill")
-            return
-        }
-
-        _uiState.value = ProfileUiState.Loading
+        // Skills validation only for developer profile (if skills are provided but empty, it's an error)
+        // For client profile, empty skills list is acceptable
+        
+        _profileState.value = ProfileDataState.Loading
         viewModelScope.launch {
             val req = ProfileCreateRequest(
                 name = name.trim(),
@@ -144,15 +142,15 @@ class ProfileViewModel(
                 location = location?.trim().takeIf { !it.isNullOrEmpty() },
                 bio = bio?.trim().takeIf { !it.isNullOrEmpty() },
                 whatsapp = whatsapp?.trim().takeIf { !it.isNullOrEmpty() },
-                skills = skills
+                skills = skills.takeIf { it.isNotEmpty() } ?: emptyList()
             )
             val result = repository.updateProfile(req)
-            _uiState.value = result.fold(
+            _profileState.value = result.fold(
                 onSuccess = { 
                     loadProfile() // Reload profile after update
-                    ProfileUiState.Success 
+                    ProfileDataState.Success(req)
                 },
-                onFailure = { ProfileUiState.Error(it.message ?: "Gagal mengupdate profil") }
+                onFailure = { ProfileDataState.Error(it.message ?: "Gagal mengupdate profil") }
             )
         }
     }

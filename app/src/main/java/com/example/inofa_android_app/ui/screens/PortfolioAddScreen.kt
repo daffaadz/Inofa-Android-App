@@ -42,6 +42,9 @@ import com.example.inofa_android_app.BuildConfig
 import com.example.inofa_android_app.utils.ImageUtils
 import com.example.inofa_android_app.ui.viewmodel.PortfolioAddViewModel
 import com.example.inofa_android_app.ui.viewmodel.PortfolioAddUiState
+import com.example.inofa_android_app.ui.components.CustomSnackbarHost
+import com.example.inofa_android_app.ui.components.ToastType
+import com.example.inofa_android_app.ui.components.showCustomToast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +88,10 @@ fun PortfolioAddScreen(
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is PortfolioAddUiState.Success -> {
-                snackbarHostState.showSnackbar("Portfolio berhasil disimpan!")
+                snackbarHostState.showCustomToast(
+                    "Portfolio berhasil disimpan!",
+                    ToastType.SUCCESS
+                )
                 onSuccess()
             }
             is PortfolioAddUiState.Loaded -> {
@@ -97,10 +103,16 @@ fun PortfolioAddScreen(
             }
             is PortfolioAddUiState.ImageUploaded -> {
                 imageUrl = state.imageUrl
-                snackbarHostState.showSnackbar("Gambar berhasil diupload!")
+                snackbarHostState.showCustomToast(
+                    "Gambar berhasil diupload!",
+                    ToastType.SUCCESS
+                )
             }
             is PortfolioAddUiState.Error -> {
-                snackbarHostState.showSnackbar("Error: ${state.message}")
+                snackbarHostState.showCustomToast(
+                    state.message,
+                    ToastType.ERROR
+                )
             }
             PortfolioAddUiState.Idle,
             PortfolioAddUiState.Loading,
@@ -109,7 +121,12 @@ fun PortfolioAddScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { 
+            CustomSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        },
         topBar = {
             TopAppBar(
                 title = {

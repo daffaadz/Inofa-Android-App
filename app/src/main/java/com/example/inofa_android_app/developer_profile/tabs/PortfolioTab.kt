@@ -1,7 +1,10 @@
 package com.example.inofa_android_app.developer_profile.tabs
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +31,8 @@ import com.example.inofa_android_app.utils.ImageUtils
 
 @Composable
 fun PortfolioTab(portfolio: List<PortfolioItem>) {
+    val context = LocalContext.current
+    
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
@@ -35,7 +41,14 @@ fun PortfolioTab(portfolio: List<PortfolioItem>) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(portfolio) { item ->
-            PortfolioItemCard(item = item)
+            PortfolioItemCard(
+                item = item,
+                onClick = {
+                    item.link?.let { url ->
+                        openUrl(context, url)
+                    }
+                }
+            )
         }
         item {
             Spacer(modifier = Modifier.height(60.dp)) // Space for bottom padding
@@ -43,12 +56,30 @@ fun PortfolioTab(portfolio: List<PortfolioItem>) {
     }
 }
 
+private fun openUrl(context: android.content.Context, url: String) {
+    try {
+        val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            "https://$url"
+        } else {
+            url
+        }
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(formattedUrl))
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
 @Composable
-fun PortfolioItemCard(item: PortfolioItem) {
+fun PortfolioItemCard(
+    item: PortfolioItem,
+    onClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f), // Square aspect ratio
+            .aspectRatio(1f)
+            .clickable(onClick = onClick), // Square aspect ratio
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

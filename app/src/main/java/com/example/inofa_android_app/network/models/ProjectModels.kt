@@ -16,6 +16,7 @@ data class ProjectDto(
     val budget: Double?,
     @SerializedName("skill_requirements") val skillRequirements: List<String>?,
     val constraints: String?,
+    val status: String?,
     @SerializedName("created_at") val createdAt: String?,
     @SerializedName("updated_at") val updatedAt: String?
 )

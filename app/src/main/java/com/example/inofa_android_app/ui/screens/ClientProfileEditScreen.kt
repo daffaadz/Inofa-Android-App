@@ -33,6 +33,9 @@ import com.example.inofa_android_app.ui.viewmodel.ProfileViewModel
 import com.example.inofa_android_app.ui.viewmodel.ProfileDataState
 import com.example.inofa_android_app.data.TokenStorage
 import com.example.inofa_android_app.data.UserRoleStorage
+import com.example.inofa_android_app.ui.components.CustomSnackbarHost
+import com.example.inofa_android_app.ui.components.ToastType
+import com.example.inofa_android_app.ui.components.showCustomToast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,15 +83,21 @@ fun ClientProfileEditScreen(
                     hasLoadedInitialData = true
                 } else {
                     // Update successful - show message and navigate back
-                    snackbarHostState.showSnackbar("Profile berhasil diperbarui!")
-                    kotlinx.coroutines.delay(500)
+                    snackbarHostState.showCustomToast(
+                        "Profile berhasil diperbarui!",
+                        ToastType.SUCCESS
+                    )
+                    kotlinx.coroutines.delay(150)
                     onSuccess()
                 }
             }
             is ProfileDataState.Error -> {
                 if (hasLoadedInitialData) {
                     // Only show error for update, not initial load
-                    snackbarHostState.showSnackbar("Error: ${state.message}")
+                    snackbarHostState.showCustomToast(
+                        state.message,
+                        ToastType.ERROR
+                    )
                 }
             }
             else -> {}
@@ -96,7 +105,12 @@ fun ClientProfileEditScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { 
+            CustomSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        },
         topBar = {
             TopAppBar(
                 title = {

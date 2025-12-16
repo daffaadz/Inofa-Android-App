@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.inofa_android_app.data.Project
 import com.example.inofa_android_app.utils.ImageUtils
+import com.example.inofa_android_app.utils.DateUtils
 import com.example.inofa_android_app.ui.viewmodel.ProjectUiState
 import com.example.inofa_android_app.ui.viewmodel.ProjectViewModel
 import com.example.inofa_android_app.ui.viewmodel.ProfileViewModel
@@ -38,6 +39,7 @@ fun ClientProfileViewScreen(
     onNavigateToDiscover: () -> Unit = {},
     onNavigateToProjects: () -> Unit = {},
     onEditProfile: () -> Unit = {},
+    onNavigateToProjectDetail: (Int) -> Unit = {},
     onLogout: () -> Unit = {},
     projectViewModel: ProjectViewModel = viewModel(),
     profileViewModel: ProfileViewModel = viewModel()
@@ -207,11 +209,12 @@ fun ClientProfileViewScreen(
                             color = Color.Black
                         )
 
-                        // Username (email)
+                        // Location or bio
                         Text(
-                            text = "@${profile?.name?.lowercase()?.replace(" ", "") ?: "user"}",
+                            text = profile?.location ?: profile?.bio ?: "Belum ada informasi",
                             fontSize = 14.sp,
-                            color = Color.Gray
+                            color = Color.Gray,
+                            maxLines = 1
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -235,6 +238,7 @@ fun ClientProfileViewScreen(
             }
 
             // Stats Cards
+            val doneProjects = projects.filter { it.status?.lowercase() == "done" }
             item {
                 Row(
                     modifier = Modifier
@@ -314,7 +318,7 @@ fun ClientProfileViewScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "3",
+                                    text = "${doneProjects.size}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.Black
@@ -331,42 +335,45 @@ fun ClientProfileViewScreen(
             }
 
             // Pending Payment Banner
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFF9E6)
-                    ),
-                    elevation = CardDefaults.cardElevation(0.dp)
-                ) {
-                    Row(
+            val pendingProjects = projects.filter { it.status?.lowercase() == "pending" }
+            if (pendingProjects.isNotEmpty()) {
+                item {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFFFF9E6)
+                        ),
+                        elevation = CardDefaults.cardElevation(0.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Warning",
-                            tint = Color(0xFFF59E0B),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Pembayaran Tertunda",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.Black
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Warning",
+                                tint = Color(0xFFF59E0B),
+                                modifier = Modifier.size(24.dp)
                             )
-                            Text(
-                                text = "Anda memiliki 1 proyek yang menunggu pembayaran",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Proyek Menunggu",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "Anda memiliki ${pendingProjects.size} proyek dengan status pending",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
                     }
                 }
@@ -441,7 +448,11 @@ fun ClientProfileViewScreen(
                         }
                     } else {
                         items(projects) { project ->
-                            ClientProjectCard(project = project)
+                            ClientProjectCard(
+                                project = project,
+                                clientName = profile?.name,
+                                onClick = { onNavigateToProjectDetail(project.id) }
+                            )
                         }
                     }
                 }
@@ -458,12 +469,27 @@ fun ClientProfileViewScreen(
 }
 
 @Composable
-fun ClientProjectCard(project: Project) {
+fun ClientProjectCard(
+    project: Project,
+    clientName: String? = null,
+    onClick: () -> Unit = {}
+) {
+    val initial = DateUtils.getInitial(clientName)
+    val relativeTime = DateUtils.getRelativeTime(project.createdAt)
+    
+    // Status badge configuration
+    val statusConfig = when (project.status?.lowercase()) {
+        "accepted" -> Triple("Diterima", Color(0xFF10B981), Color(0xFF10B981))
+        "rejected" -> Triple("Ditolak", Color(0xFFEF4444), Color(0xFFEF4444))
+        "done" -> Triple("Selesai", Color(0xFF3B82F6), Color(0xFF3B82F6))
+        else -> Triple("Pending", Color(0xFFFBBF24), Color(0xFFFBBF24))
+    }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable { /* TODO: Navigate to project detail */ },
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(2.dp)
@@ -495,7 +521,7 @@ fun ClientProjectCard(project: Project) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "S",
+                                text = initial,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF00BFA5)
@@ -503,7 +529,7 @@ fun ClientProjectCard(project: Project) {
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Sarah Putri",
+                            text = clientName ?: "Client",
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
@@ -525,18 +551,18 @@ fun ClientProjectCard(project: Project) {
                                     modifier = Modifier
                                         .size(8.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFFBBF24))
+                                        .background(statusConfig.second)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Pending",
+                                    text = statusConfig.first,
                                     fontSize = 12.sp,
                                     color = Color.Black
                                 )
                             }
                         }
                         Text(
-                            text = "2 jam lalu",
+                            text = relativeTime,
                             fontSize = 12.sp,
                             color = Color.Gray
                         )

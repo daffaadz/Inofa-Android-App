@@ -46,6 +46,36 @@ class ProjectRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun updateProject(id: Int, request: ProjectCreateRequest): Result<ProjectCreateResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.updateProject(id, request)
+            if (response.success) Result.success(response)
+            else Result.failure(IllegalStateException(response.message ?: "Gagal mengupdate proyek"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteProject(id: Int): Result<ProjectCreateResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.deleteProject(id)
+            if (response.success) Result.success(response)
+            else Result.failure(IllegalStateException(response.message ?: "Gagal menghapus proyek"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateProjectStatus(id: Int, status: String): Result<ProjectCreateResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.updateProjectStatus(id, mapOf("status" to status))
+            if (response.success) Result.success(response)
+            else Result.failure(IllegalStateException(response.message ?: "Gagal mengubah status proyek"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
 private fun ProjectDto.toDomain(): Project = Project(
@@ -56,6 +86,7 @@ private fun ProjectDto.toDomain(): Project = Project(
     budget = budget,
     skillRequirements = skillRequirements ?: emptyList(),
     constraints = constraints,
+    status = status ?: "pending",
     createdAt = createdAt ?: "",
     updatedAt = updatedAt ?: ""
 )
