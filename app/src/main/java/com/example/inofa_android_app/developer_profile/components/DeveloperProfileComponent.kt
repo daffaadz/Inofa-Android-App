@@ -222,7 +222,7 @@ fun DeveloperProfileHeaderPreview() {
     InofaAndroidAppTheme {
         DeveloperProfileHeader(
             developer = mockDeveloper,
-            actionButtonText = "Kirim Form Permintaan"
+            actionButtonText = "Kirim Pesan"
         )
     }
 }
