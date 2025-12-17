@@ -89,7 +89,7 @@ fun DeveloperProfileScreen(
                 DeveloperProfileTopBar(onBackClick = onBackClick)
                 DeveloperProfileHeader(
                     developer = developer,
-                    actionButtonText = "Kirim Form Permintaan",
+                    actionButtonText = "Kirim Pesan",
                     onActionClick = {
                         val waUrl = developer.whatsappLink
                             ?: developer.whatsapp?.let { "https://wa.me/$it" }
