@@ -28,25 +28,8 @@ android {
         }
     }
     
-    // Auto-detect WiFi IP address
-    val hostIp = try {
-        val command = arrayOf(
-            "powershell.exe",
-            "-Command",
-            "(Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias 'Wi-Fi' | Where-Object {\$_.IPAddress -like '192.168.*' -or \$_.IPAddress -like '10.*'}).IPAddress"
-        )
-        val process = Runtime.getRuntime().exec(command)
-        val result = process.inputStream.bufferedReader().readText().trim()
-        if (result.isEmpty()) "10.0.2.2" else result
-    } catch (e: Exception) {
-        println("Warning: Could not auto-detect IP, using fallback: 192.168.100.14")
-        "192.168.100.14"
-    }
-    
     buildTypes.forEach {
-        val apiUrl = "http://$hostIp:4000/"
-        println("Using API Base URL: $apiUrl")
-        it.buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
+        it.buildConfigField("String", "API_BASE_URL", "\"http://10.33.193.4:4000/\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
